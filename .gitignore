@@ -1,0 +1,19 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Nested project ignore
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+server/node_modules/
+server/dist/
+server/.env
