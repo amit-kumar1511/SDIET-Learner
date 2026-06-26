@@ -3,7 +3,7 @@ import { X, ExternalLink, Download, Loader2, ChevronLeft, ChevronRight } from 'l
 import { pdfjs, Document, Page } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
-import { getDownloadUrl, getViewerUrl } from '../lib/cloudinary';
+import { downloadFile, getViewerUrl } from '../lib/cloudinary';
 
 // Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -19,7 +19,6 @@ interface PDFViewerModalProps {
 
 const PDFViewerModal: React.FC<PDFViewerModalProps> = ({ url, title, onClose }) => {
   const viewerUrl = getViewerUrl(url);
-  const downloadUrl = getDownloadUrl(url);
   const [numPages, setNumPages] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -70,14 +69,13 @@ const PDFViewerModal: React.FC<PDFViewerModalProps> = ({ url, title, onClose }) 
             {title}
           </h3>
           <div className="flex items-center space-x-2">
-            <a
-              href={downloadUrl}
-              download
+            <button
+              onClick={() => downloadFile(url, title)}
               className="p-2 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
               title="Download"
             >
               <Download className="w-5 h-5" />
-            </a>
+            </button>
             <a
               href={viewerUrl}
               target="_blank"

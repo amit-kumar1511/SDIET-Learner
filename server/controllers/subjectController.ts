@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import { Subject } from '../models/Subject.js';
-
+import { Note } from '../models/Note.js';
+import { Chat } from '../models/Chat.js';
 import { TeacherAssignment } from '../models/TeacherAssignment.js';
 
 export const getSubjects = asyncHandler(async (req: any, res: Response) => {
@@ -48,4 +49,19 @@ export const createSubject = asyncHandler(async (req: Request, res: Response) =>
   const { name, description, logoUrl, branch, semester } = req.body;
   const subject = await Subject.create({ name, description, logoUrl, branch, semester });
   res.status(201).json(subject);
+});
+
+export const deleteSubject = asyncHandler(async (req: Request, res: Response) => {
+  const subject = await Subject.findById(req.params.id);
+  if (subject) {
+    await Subject.findByIdAndDelete(req.params.id);
+    // Delete associated notes, assignments, and chats
+    await Note.deleteMany({ subjectId: req.params.id });
+    await TeacherAssignment.deleteMany({ subjectId: req.params.id });
+    await Chat.deleteMany({ subjectId: req.params.id });
+    res.json({ message: 'Subject removed' });
+  } else {
+    res.status(404);
+    throw new Error('Subject not found');
+  }
 });

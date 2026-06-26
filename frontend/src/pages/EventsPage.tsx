@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { showConfirm } from '../lib/confirm';
 import { Skeleton } from '../components/ui/Skeleton';
 import { format } from 'date-fns';
-import { getDownloadUrl, getViewerUrl } from '../lib/cloudinary';
+import { downloadFile, getViewerUrl } from '../lib/cloudinary';
 import PDFViewerModal from '../components/PDFViewerModal';
 
 const EventsPage = () => {
@@ -152,14 +152,13 @@ const EventsPage = () => {
                   >
                     <Eye className="w-5 h-5" />
                   </button>
-                  <a
-                    href={getDownloadUrl(event.attachmentUrl)}
-                    download
+                  <button
+                    onClick={() => downloadFile(event.attachmentUrl, event.title)}
                     title="Download"
                     className="p-2 text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors"
                   >
                     <Download className="w-5 h-5" />
-                  </a>
+                  </button>
                   {(user?.role === 'SUPER_ADMIN' || user?.role === 'TEACHER' || user?._id === event.createdBy?._id) && (
                     <button
                       onClick={() => handleDelete(event._id)}

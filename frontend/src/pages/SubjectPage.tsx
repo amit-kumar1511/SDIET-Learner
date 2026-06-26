@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { showConfirm } from '../lib/confirm';
 import { Skeleton } from '../components/ui/Skeleton';
 import { format } from 'date-fns';
-import { getDownloadUrl, getViewerUrl } from '../lib/cloudinary';
+import { downloadFile, getViewerUrl } from '../lib/cloudinary';
 import PDFViewerModal from '../components/PDFViewerModal';
 
 const NOTE_TYPES = ['Notes', 'PYQ', 'Assignment', 'Task'];
@@ -292,14 +292,13 @@ const SubjectPage = () => {
                     >
                       <Eye className="w-5 h-5" />
                     </button>
-                    <a
-                      href={getDownloadUrl(note.fileUrl)}
-                      download
+                    <button
+                      onClick={() => downloadFile(note.fileUrl, note.title)}
                       title="Download"
                       className="p-1.5 text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors"
                     >
                       <Download className="w-5 h-5" />
-                    </a>
+                    </button>
                     {(user?.role === 'TEACHER' || user?.role === 'SUPER_ADMIN' || user?._id === note.uploadedBy?._id) && (
                       <button
                         onClick={() => handleDelete(note._id)}

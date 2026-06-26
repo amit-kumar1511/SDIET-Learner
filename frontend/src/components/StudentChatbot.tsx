@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Sparkles, MessageSquare, X, Send, BookOpen, Download, Eye, FileText, ChevronRight } from 'lucide-react';
-import { getDownloadUrl } from '../lib/cloudinary';
+import { downloadFile } from '../lib/cloudinary';
 import PDFViewerModal from './PDFViewerModal';
 import { useAuth } from '../context/AuthContext';
 
@@ -608,14 +608,13 @@ const StudentChatbot = () => {
                               <Eye className="w-3.5 h-3.5" />
                               <span>View</span>
                             </button>
-                            <a
-                              href={getDownloadUrl(res.fileUrl)}
-                              download
+                            <button
+                              onClick={() => downloadFile(res.fileUrl, res.title)}
                               className="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-750 dark:text-slate-200 rounded-xl text-[10px] font-black transition-colors flex items-center justify-center space-x-1 border border-slate-200 dark:border-slate-700"
                             >
                               <Download className="w-3.5 h-3.5" />
                               <span>Download</span>
-                            </a>
+                            </button>
                           </div>
                         </div>
                       );

@@ -73,18 +73,37 @@ export async function extractTextFromImage(fileUrl: string): Promise<string> {
       mimeType = 'image/gif';
     }
 
-    const response = await client.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: [
-        {
-          inlineData: {
-            mimeType,
-            data: imageBuffer.toString('base64'),
-          },
+    let response;
+    const contents = [
+      {
+        inlineData: {
+          mimeType,
+          data: imageBuffer.toString('base64'),
         },
-        'Extract all educational/academic notes, handwriting, tables, definitions, diagrams text, or standard text from this study sheet image. Transcribe it beautifully and accurately in readable markdown format. Do not add any conversational meta commentary - output only the extracted content. If the image contains zero legible words, return an empty string.',
-      ],
-    });
+      },
+      'Extract all educational/academic notes, handwriting, tables, definitions, diagrams text, or standard text from this study sheet image. Transcribe it beautifully and accurately in readable markdown format. Do not add any conversational meta commentary - output only the extracted content. If the image contains zero legible words, return an empty string.',
+    ];
+
+    try {
+      response = await client.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents,
+      });
+    } catch (err: any) {
+      console.warn('Gemini 2.5 Flash OCR failed, trying gemini-1.5-flash:', err.message);
+      try {
+        response = await client.models.generateContent({
+          model: 'gemini-1.5-flash',
+          contents,
+        });
+      } catch (err2: any) {
+        console.warn('Gemini 1.5 Flash OCR failed, trying gemini-2.0-flash:', err2.message);
+        response = await client.models.generateContent({
+          model: 'gemini-2.0-flash',
+          contents,
+        });
+      }
+    }
 
     const text = response.text?.trim() || '';
     console.log(`Image Gemini OCR success. Length: ${text.length}`);
@@ -159,14 +178,51 @@ Remember: If the target topic is missing or unaddressed in the context notes abo
     parts: [{ text: finalPrompt }],
   });
 
-  const response = await client.models.generateContent({
-    model: 'gemini-3.5-flash',
-    contents: chatContents as any,
-    config: {
-      systemInstruction,
-      temperature: 0.2, // lower temperature to strictly adhere to notes context
-    },
-  });
+  let response;
+  try {
+    response = await client.models.generateContent({
+      model: 'gemini-3.5-flash',
+      contents: chatContents as any,
+      config: {
+        systemInstruction,
+        temperature: 0.2,
+      },
+    });
+  } catch (err: any) {
+    console.warn('Gemini 3.5 Flash failed, trying gemini-1.5-flash:', err.message);
+    try {
+      response = await client.models.generateContent({
+        model: 'gemini-1.5-flash',
+        contents: chatContents as any,
+        config: {
+          systemInstruction,
+          temperature: 0.2,
+        },
+      });
+    } catch (err2: any) {
+      console.warn('Gemini 1.5 Flash failed, trying gemini-2.0-flash:', err2.message);
+      try {
+        response = await client.models.generateContent({
+          model: 'gemini-2.0-flash',
+          contents: chatContents as any,
+          config: {
+            systemInstruction,
+            temperature: 0.2,
+          },
+        });
+      } catch (err3: any) {
+        console.warn('Gemini 2.0 Flash failed, trying gemini-1.5-pro:', err3.message);
+        response = await client.models.generateContent({
+          model: 'gemini-1.5-pro',
+          contents: chatContents as any,
+          config: {
+            systemInstruction,
+            temperature: 0.2,
+          },
+        });
+      }
+    }
+  }
 
   return response.text || '';
 }
