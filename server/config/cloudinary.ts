@@ -2,24 +2,33 @@ import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import multer from 'multer';
 
-const getConfigValue = (keys: string[], defaultValue: string) => {
+const getConfigValue = (keys: string[]) => {
   for (const key of keys) {
     const val = process.env[key];
     if (val && val.trim() !== '') {
       return val.trim();
     }
   }
-  return defaultValue;
+  return '';
 };
 
+const cloudName = getConfigValue(['CLOUDINARY_CLOUD_NAME', 'Cloudnary_name']);
+const apiKey = getConfigValue(['CLOUDINARY_API_KEY', 'Cloudnary_id']);
+const apiSecret = getConfigValue(['CLOUDINARY_API_SECRET', 'Cloudnary_secret']);
+
+if (!cloudName || !apiKey || !apiSecret) {
+  console.error("Cloudinary credentials are not defined in environment variables");
+  process.exit(1);
+}
+
 cloudinary.config({
-  cloud_name: getConfigValue(['CLOUDINARY_CLOUD_NAME', 'Cloudnary_name'], 'sdietian').toLowerCase(),
-  api_key: getConfigValue(['CLOUDINARY_API_KEY', 'Cloudnary_id'], '221615238522949'),
-  api_secret: getConfigValue(['CLOUDINARY_API_SECRET', 'Cloudnary_secret'], 'lGWVPLHnmC5yMk-pVvwLcILHiw8'),
+  cloud_name: cloudName.toLowerCase(),
+  api_key: apiKey,
+  api_secret: apiSecret,
   secure: true,
 });
 
-console.log('Cloudinary initialized with cloud_name:', getConfigValue(['CLOUDINARY_CLOUD_NAME', 'Cloudnary_name'], 'sdietian').toLowerCase());
+console.log('Cloudinary initialized with cloud_name:', cloudName.toLowerCase());
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,

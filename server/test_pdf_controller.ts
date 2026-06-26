@@ -5,7 +5,11 @@ import { StudentPlan } from './models/StudentPlan.js';
 import { downloadAllPlansPDF } from './controllers/studentPlanController.js';
 import { Writable } from 'stream';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://Sdietean:amitsharma@cluster0.i6ic2ee.mongodb.net/?appName=Cluster0';
+const MONGODB_URI = process.env.MONGODB_URI;
+if (!MONGODB_URI) {
+  console.error("MONGODB_URI is not defined in environment variables");
+  process.exit(1);
+}
 
 // Simple mock response
 class MockResponse extends Writable {
@@ -42,7 +46,7 @@ class MockResponse extends Writable {
 async function test() {
   try {
     console.log("Connecting to MongoDB...");
-    await mongoose.connect(MONGODB_URI);
+    await mongoose.connect(MONGODB_URI!);
     console.log("Connected!");
 
     // Find any student
