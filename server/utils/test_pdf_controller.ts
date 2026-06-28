@@ -1,8 +1,8 @@
-import './config/env.js';
+import '../config/env.js';
 import mongoose from 'mongoose';
-import { User } from './models/User.js';
-import { StudentPlan } from './models/StudentPlan.js';
-import { downloadAllPlansPDF } from './controllers/studentPlanController.js';
+import { User } from '../models/User.js';
+import { StudentPlan } from '../models/StudentPlan.js';
+import { downloadAllPlansPDF } from '../controllers/studentPlanController.js';
 import { Writable } from 'stream';
 
 const MONGODB_URI = process.env.MONGODB_URI;
