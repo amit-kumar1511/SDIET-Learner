@@ -26,13 +26,7 @@ export const uploadNote = asyncHandler(async (req: any, res: Response) => {
     fileType = (req.file.mimetype === 'application/pdf' || req.file.originalname.toLowerCase().endsWith('.pdf')) ? 'pdf' : 'image';
   }
 
-  let extractedText = '';
-  if (fileType === 'pdf') {
-    extractedText = await extractTextFromPdf(fileUrl);
-  } else if (fileType === 'image') {
-    extractedText = await extractTextFromImage(fileUrl);
-  }
-
+  // Create the note immediately without blocking on OCR
   const note = await Note.create({
     title,
     description,
@@ -41,27 +35,46 @@ export const uploadNote = asyncHandler(async (req: any, res: Response) => {
     type,
     subjectId,
     uploadedBy: req.user._id,
-    extractedText: extractedText || undefined,
   });
 
-  // Notify students
-  const subject = await Subject.findById(subjectId);
-  if (subject) {
-    const students = await User.find({ role: 'STUDENT', branch: subject.branch as any, semester: subject.semester });
-    const emails = students.map(s => s.email);
-    if (emails.length > 0) {
-      await sendNoteMail({
-        bcc: emails,
-        subjectName: subject.name,
-        type: type,
-        title: title,
-        branch: subject.branch,
-        semester: subject.semester
-      });
-    }
-  }
-
+  // Respond to the frontend immediately so the progress bar closes
   res.status(201).json(note);
+
+  // Perform PDF/Image text extraction and student notification in the background
+  (async () => {
+    try {
+      let extractedText = '';
+      if (fileType === 'pdf') {
+        extractedText = await extractTextFromPdf(fileUrl);
+      } else if (fileType === 'image') {
+        extractedText = await extractTextFromImage(fileUrl);
+      }
+
+      if (extractedText) {
+        await Note.findByIdAndUpdate(note._id, { extractedText });
+        console.log(`Successfully updated note ${note._id} with extracted text.`);
+      }
+
+      // Notify students via email
+      const subject = await Subject.findById(subjectId);
+      if (subject) {
+        const students = await User.find({ role: 'STUDENT', branch: subject.branch as any, semester: subject.semester });
+        const emails = students.map(s => s.email);
+        if (emails.length > 0) {
+          await sendNoteMail({
+            bcc: emails,
+            subjectName: subject.name,
+            type: type,
+            title: title,
+            branch: subject.branch,
+            semester: subject.semester
+          });
+        }
+      }
+    } catch (bgError) {
+      console.error('Error in background note processing:', bgError);
+    }
+  })();
 });
 
 export const deleteNote = asyncHandler(async (req: any, res: Response) => {
