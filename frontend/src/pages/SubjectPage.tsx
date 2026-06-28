@@ -142,11 +142,13 @@ const SubjectPage = () => {
       message: 'Are you sure you want to delete this content?',
       confirmText: 'Delete',
       onConfirm: async () => {
+        const loadingToast = toast.loading('Deleting...');
         try {
           await axios.delete(`/api/notes/${noteId}`);
+          toast.success('Deleted successfully', { id: loadingToast });
           fetchNotes();
         } catch (error) {
-          toast.error('Failed to delete');
+          toast.error('Failed to delete', { id: loadingToast });
         }
       }
     });
@@ -423,9 +425,10 @@ const SubjectPage = () => {
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                      disabled={isUploading}
+                      className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-semibold"
                     >
-                      Upload
+                      {isUploading ? 'Uploading...' : 'Upload'}
                     </button>
                   </div>
                 </>

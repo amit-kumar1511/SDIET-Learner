@@ -14,6 +14,7 @@ const NotesPage = () => {
   const { user } = useAuth();
   const [subjects, setSubjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState(
     user?.role === 'STUDENT' ? user.branch : 'BTECH'
   );
@@ -56,6 +57,7 @@ const NotesPage = () => {
 
   const handleCreateSubject = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsCreating(true);
     try {
       await axios.post('/api/subjects', {
         ...newSubject,
@@ -68,6 +70,8 @@ const NotesPage = () => {
       fetchSubjects();
     } catch (error) {
       toast.error('Failed to create subject');
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -264,9 +268,10 @@ const NotesPage = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold"
+                  disabled={isCreating}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold disabled:opacity-50"
                 >
-                  Create Subject
+                  {isCreating ? 'Creating...' : 'Create Subject'}
                 </button>
               </div>
             </form>

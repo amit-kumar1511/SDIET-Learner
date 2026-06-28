@@ -319,12 +319,13 @@ export default function StudentPlansPage() {
       title: 'Delete Study Plan',
       message: 'Are you sure you want to permanently delete this plan?',
       onConfirm: async () => {
+        const loadingToast = toast.loading('Deleting plan...');
         try {
           await axios.delete(`/api/student/plans/${id}`);
-          toast.success('Plan deleted successfully');
+          toast.success('Plan deleted successfully', { id: loadingToast });
           fetchPlans();
         } catch (error) {
-          toast.error('Failed to delete plan');
+          toast.error('Failed to delete plan', { id: loadingToast });
         }
       }
     });

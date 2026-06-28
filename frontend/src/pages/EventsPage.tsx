@@ -41,11 +41,13 @@ const EventsPage = () => {
       message: 'Are you sure you want to delete this event?',
       confirmText: 'Delete Event',
       onConfirm: async () => {
+        const loadingToast = toast.loading('Deleting event...');
         try {
           await axios.delete(`/api/info/events/${id}`);
+          toast.success('Event deleted successfully', { id: loadingToast });
           fetchEvents();
         } catch (error) {
-          toast.error('Failed to delete event');
+          toast.error('Failed to delete event', { id: loadingToast });
         }
       }
     });
@@ -278,9 +280,10 @@ const EventsPage = () => {
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                      disabled={isUploading}
+                      className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-semibold"
                     >
-                      Create
+                      {isUploading ? 'Creating...' : 'Create'}
                     </button>
                   </div>
                 </>

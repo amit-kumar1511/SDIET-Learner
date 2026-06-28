@@ -18,6 +18,7 @@ const AdminPage = () => {
   const [isLoadingSubjects, setIsLoadingSubjects] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
   const [isAssigning, setIsAssigning] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Assignment state
   const [assignments, setAssignments] = useState<any[]>([]);
@@ -254,8 +255,17 @@ const AdminPage = () => {
 
       {activeTab === 'directory' ? (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">Teachers Directory</h2>
+            <div className="w-full sm:w-72">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by name or email..."
+                className="w-full px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium"
+              />
+            </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-6">
             {isLoadingTeachers ? (
@@ -268,21 +278,33 @@ const AdminPage = () => {
                   </div>
                 </div>
               ))
+            ) : teachers.filter(t => 
+                t.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                t.email.toLowerCase().includes(searchQuery.toLowerCase())
+              ).length > 0 ? (
+              teachers
+                .filter(t => 
+                  t.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                  t.email.toLowerCase().includes(searchQuery.toLowerCase())
+                )
+                .map(teacher => (
+                  <div
+                    key={teacher._id}
+                    onClick={() => setSelectedTeacher(teacher)}
+                    className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow text-center animate-in fade-in duration-200"
+                  >
+                    <div className="w-16 h-16 mx-auto bg-indigo-100 dark:bg-indigo-900/50 rounded-full flex items-center justify-center text-2xl font-bold text-indigo-600 dark:text-indigo-400 mb-4">
+                      {teacher.name.charAt(0).toUpperCase()}
+                    </div>
+                    <h3 className="font-bold text-gray-900 dark:text-white">{teacher.name}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{teacher.email}</p>
+                  </div>
+                ))
             ) : (
-              teachers.map(teacher => (
-              <div
-                key={teacher._id}
-                onClick={() => setSelectedTeacher(teacher)}
-                className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow text-center"
-              >
-                <div className="w-16 h-16 mx-auto bg-indigo-100 dark:bg-indigo-900/50 rounded-full flex items-center justify-center text-2xl font-bold text-indigo-600 dark:text-indigo-400 mb-4">
-                  {teacher.name.charAt(0).toUpperCase()}
-                </div>
-                <h3 className="font-bold text-gray-900 dark:text-white">{teacher.name}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{teacher.email}</p>
+              <div className="col-span-full text-center py-12 text-gray-500 dark:text-gray-400 font-medium">
+                No teachers found matching "{searchQuery}"
               </div>
-            ))
-          )}
+            )}
           </div>
         </div>
       ) : (

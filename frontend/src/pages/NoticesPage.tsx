@@ -41,11 +41,13 @@ const NoticesPage = () => {
       message: 'Are you sure you want to delete this notice?',
       confirmText: 'Delete Notice',
       onConfirm: async () => {
+        const loadingToast = toast.loading('Deleting notice...');
         try {
           await axios.delete(`/api/info/notices/${id}`);
+          toast.success('Notice deleted successfully', { id: loadingToast });
           fetchNotices();
         } catch (error) {
-          toast.error('Failed to delete notice');
+          toast.error('Failed to delete notice', { id: loadingToast });
         }
       }
     });
@@ -278,9 +280,10 @@ const NoticesPage = () => {
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                      disabled={isUploading}
+                      className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-semibold"
                     >
-                      Create
+                      {isUploading ? 'Creating...' : 'Create'}
                     </button>
                   </div>
                 </>

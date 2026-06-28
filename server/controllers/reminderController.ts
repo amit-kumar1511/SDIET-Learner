@@ -63,24 +63,34 @@ export const createReminder = asyncHandler(async (req: any, res: Response) => {
 
   if (emails.length > 0) {
     const formattedDate = expiryDate.toLocaleString();
-    await sendReminderMail({
-      bcc: emails,
-      title: title,
-      content: content,
-      expiryDate: formattedDate
-    });
-    
-    // Emit notification to each student
-    for (const student of students) {
-      const notification = await Notification.create({
-        recipientId: student._id,
-        senderId: req.user._id,
-        type: 'REMINDER_CREATED',
-        message: `New Reminder: ${populatedReminder.title}`,
-        reminderId: populatedReminder._id,
-      });
-      emitNotification(student._id.toString(), notification);
-    }
+    // Process email sending and database notifications in background asynchronously
+    (async () => {
+      try {
+        await sendReminderMail({
+          bcc: emails,
+          title: title,
+          content: content,
+          expiryDate: formattedDate
+        });
+      } catch (err) {
+        console.error("Error sending reminder welcome mails in background:", err);
+      }
+
+      try {
+        for (const student of students) {
+          const notification = await Notification.create({
+            recipientId: student._id,
+            senderId: req.user._id,
+            type: 'REMINDER_CREATED',
+            message: `New Reminder: ${populatedReminder.title}`,
+            reminderId: populatedReminder._id,
+          });
+          emitNotification(student._id.toString(), notification);
+        }
+      } catch (err) {
+        console.error("Error creating notifications in background:", err);
+      }
+    })();
   }
 
   res.status(201).json(populatedReminder);
@@ -130,24 +140,34 @@ export const updateReminder = asyncHandler(async (req: any, res: Response) => {
 
   if (emails.length > 0) {
     const formattedDate = populatedReminder.expiryDate.toLocaleString();
-    await sendReminderMail({
-      bcc: emails,
-      title: `Updated: ${populatedReminder.title}`,
-      content: populatedReminder.content,
-      expiryDate: formattedDate
-    });
-    
-    // Emit notification to each student
-    for (const student of students) {
-      const notification = await Notification.create({
-        recipientId: student._id,
-        senderId: req.user._id,
-        type: 'REMINDER_UPDATED',
-        message: `Reminder Updated: ${populatedReminder.title}`,
-        reminderId: populatedReminder._id,
-      });
-      emitNotification(student._id.toString(), notification);
-    }
+    // Process email sending and database notifications in background asynchronously
+    (async () => {
+      try {
+        await sendReminderMail({
+          bcc: emails,
+          title: `Updated: ${populatedReminder.title}`,
+          content: populatedReminder.content,
+          expiryDate: formattedDate
+        });
+      } catch (err) {
+        console.error("Error sending updated reminder emails in background:", err);
+      }
+
+      try {
+        for (const student of students) {
+          const notification = await Notification.create({
+            recipientId: student._id,
+            senderId: req.user._id,
+            type: 'REMINDER_UPDATED',
+            message: `Reminder Updated: ${populatedReminder.title}`,
+            reminderId: populatedReminder._id,
+          });
+          emitNotification(student._id.toString(), notification);
+        }
+      } catch (err) {
+        console.error("Error creating notifications in background:", err);
+      }
+    })();
   }
 
   res.json(populatedReminder);

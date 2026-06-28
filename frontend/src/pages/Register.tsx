@@ -30,6 +30,7 @@ const Register = () => {
   });
   const [otpSent, setOtpSent] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
 
   const { user, login } = useAuth();
   const navigate = useNavigate();
@@ -59,25 +60,28 @@ const Register = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!otpSent) {
-      toast.error('Please verify your email with OTP first');
-      return;
-    }
-    
-    try {
-      const payload = {
-        ...formData,
-        role: 'STUDENT'
-      };
-      const { data } = await axios.post('/api/auth/register', payload);
-      login(data);
-      toast.success('Registration successful');
-      navigate('/');
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Registration failed');
-    }
-  };
+     e.preventDefault();
+     if (!otpSent) {
+       toast.error('Please verify your email with OTP first');
+       return;
+     }
+     
+     setIsRegistering(true);
+     try {
+       const payload = {
+         ...formData,
+         role: 'STUDENT'
+       };
+       const { data } = await axios.post('/api/auth/register', payload);
+       login(data);
+       toast.success('Registration successful');
+       navigate('/');
+     } catch (error: any) {
+       toast.error(error.response?.data?.message || 'Registration failed');
+     } finally {
+       setIsRegistering(false);
+     }
+   };
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center py-12 px-4">
@@ -214,10 +218,10 @@ const Register = () => {
           <div className="pt-4">
             <button
               type="submit"
-              disabled={!otpSent}
-              className="w-full bg-indigo-600 text-white font-black py-4 px-8 rounded-2xl hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 dark:shadow-none active:scale-[0.98] text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!otpSent || isRegistering}
+              className="w-full bg-indigo-600 text-white font-black py-4 px-8 rounded-2xl hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 dark:shadow-none active:scale-[0.98] text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
-              {otpSent ? 'Complete Registration' : 'Verify Email First'}
+              {isRegistering ? 'Registering...' : (otpSent ? 'Complete Registration' : 'Verify Email First')}
             </button>
             <p className="mt-8 text-center text-gray-500 dark:text-gray-400 font-medium">
               Already have an account?{' '}

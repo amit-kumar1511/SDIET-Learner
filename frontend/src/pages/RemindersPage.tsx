@@ -102,11 +102,13 @@ const RemindersPage = () => {
       message: 'Are you sure you want to delete this reminder?',
       confirmText: 'Delete Reminder',
       onConfirm: async () => {
+        const loadingToast = toast.loading('Deleting reminder...');
         try {
           await axios.delete(`/api/reminders/${id}`);
+          toast.success('Reminder deleted successfully', { id: loadingToast });
           fetchReminders();
         } catch (error) {
-          toast.error('Failed to delete reminder');
+          toast.error('Failed to delete reminder', { id: loadingToast });
         }
       }
     });
@@ -159,11 +161,11 @@ const RemindersPage = () => {
           </div>
         ) : (
           reminders.map((reminder) => (
-            <div key={reminder._id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-amber-100 dark:border-amber-900/30 overflow-hidden relative">
+            <div key={reminder._id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-amber-100 dark:border-amber-900/30 overflow-hidden relative transition-all hover:shadow-md">
               <div className="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
-              <div className="p-6 pl-8">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="font-bold text-lg text-gray-900 dark:text-white line-clamp-2 pr-4">
+              <div className="p-5 pl-7">
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="font-bold text-base text-gray-900 dark:text-white line-clamp-2 pr-4 leading-snug">
                     {reminder.title}
                   </h3>
                   {(user?.role === 'SUPER_ADMIN' || user?.role === 'TEACHER') && (
@@ -185,7 +187,7 @@ const RemindersPage = () => {
                     </div>
                   )}
                 </div>
-                <div className="mb-6">
+                <div className="mb-4">
                   <p className={`text-gray-600 dark:text-gray-300 text-sm whitespace-pre-wrap ${!expandedReminders[reminder._id] ? 'line-clamp-4' : ''}`}>
                     {reminder.content}
                   </p>
@@ -198,9 +200,9 @@ const RemindersPage = () => {
                     </button>
                   )}
                 </div>
-                <div className="flex items-center justify-between text-xs text-gray-500 mt-auto">
+                <div className="flex items-center justify-between text-xs text-gray-500 mt-auto pt-2 border-t border-gray-50 dark:border-gray-700/40">
                   <div className="flex items-center space-x-1">
-                    <AlertCircle className="w-4 h-4 text-amber-500" />
+                    <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
                     <span>By: {reminder.createdBy?.name}</span>
                   </div>
                   <div>
@@ -214,8 +216,8 @@ const RemindersPage = () => {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white dark:bg-gray-800 w-full max-w-lg rounded-2xl shadow-xl my-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto flex flex-col animate-in zoom-in duration-200">
             <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-gray-700">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 {formData._id ? 'Edit Reminder' : 'Create Reminder'}

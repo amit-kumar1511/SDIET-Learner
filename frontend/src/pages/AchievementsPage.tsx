@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Image as ImageIcon, Plus, X, Trash2, Maximize2, AlertCircle, Loader2, ArrowLeft } from 'lucide-react';
+import { Image as ImageIcon, Plus, X, Trash2, Maximize2, AlertCircle, Loader2, ArrowLeft, Download } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -95,14 +95,37 @@ const AchievementsPage = () => {
       confirmText: 'Delete',
       cancelText: 'Cancel',
       onConfirm: async () => {
+        const loadingToast = toast.loading('Deleting achievement...');
         try {
           await axios.delete(`/api/achievements/${id}`);
+          toast.success('Deleted successfully', { id: loadingToast });
           fetchAchievements();
         } catch (error) {
-          toast.error('Delete failed');
+          toast.error('Delete failed', { id: loadingToast });
         }
       }
     });
+  };
+
+  const handleDownloadImage = async (e: React.MouseEvent, imageUrl: string, title: string) => {
+    e.stopPropagation();
+    const loadingToast = toast.loading('Starting download...');
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.setAttribute('download', `${title.replace(/\s+/g, '_') || 'achievement'}.jpg`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(blobUrl);
+      toast.success('Downloaded successfully!', { id: loadingToast });
+    } catch (err) {
+      window.open(imageUrl, '_blank');
+      toast.success('Opened image in new tab!', { id: loadingToast });
+    }
   };
 
   const isAuthorized = user?.role === 'TEACHER' || user?.role === 'SUPER_ADMIN' || (user?.role as string) === 'ADMIN';
@@ -177,11 +200,20 @@ const AchievementsPage = () => {
                       e.stopPropagation();
                       handleDelete(achievement._id);
                     }}
-                    className="absolute top-2 right-2 p-1.5 bg-red-500/90 hover:bg-red-600 text-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-all active:scale-95 z-10"
+                    className="absolute top-2 left-2 p-1.5 bg-red-500/90 hover:bg-red-600 text-white rounded-md shadow-lg transition-all active:scale-95 z-10"
+                    title="Delete Achievement"
                   >
-                    <X className="w-3 h-3" />
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 )}
+
+                <button
+                  onClick={(e) => handleDownloadImage(e, achievement.imageUrl, achievement.title)}
+                  className="absolute top-2 right-2 p-1.5 bg-gray-900/80 hover:bg-indigo-600 text-white rounded-md shadow-lg transition-all active:scale-95 z-10"
+                  title="Download Image"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                </button>
                 
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
                   <Maximize2 className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-all scale-50 group-hover:scale-100" />
@@ -221,9 +253,9 @@ const AchievementsPage = () => {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-[2.5rem] shadow-2xl p-8 border border-gray-100 dark:border-gray-700"
+              className="relative w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 sm:p-8 border border-gray-100 dark:border-gray-700 max-h-[95vh] overflow-y-auto"
             >
-              <div className="flex justify-between items-center mb-8">
+              <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Add Achievement</h2>
                 <button 
                   onClick={() => setIsModalOpen(false)} 
@@ -234,14 +266,14 @@ const AchievementsPage = () => {
                 </button>
               </div>
 
-              <form onSubmit={handleUpload} className="space-y-6">
+              <form onSubmit={handleUpload} className="space-y-5">
                 <div>
                   <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">Achievement Details</label>
                   <textarea
                     required
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-5 py-4 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all min-h-[100px]"
+                    className="w-full px-5 py-4 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all min-h-[90px] text-sm"
                     placeholder="Describe the occasion or achievement..."
                   />
                 </div>
@@ -251,7 +283,7 @@ const AchievementsPage = () => {
                   <div 
                     onClick={() => fileInputRef.current?.click()}
                     className={cn(
-                      "group relative w-full aspect-video rounded-[2rem] border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden bg-gray-50/50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-900/100",
+                      "group relative w-full h-36 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden bg-gray-50/50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-900/100",
                       formData.image ? "border-indigo-500" : "border-gray-200 dark:border-gray-700"
                     )}
                   >
@@ -263,10 +295,10 @@ const AchievementsPage = () => {
                         </div>
                       </div>
                     ) : (
-                      <div className="text-center">
-                        <ImageIcon className="w-8 h-8 text-indigo-600 mx-auto mb-3" />
-                        <p className="text-gray-900 dark:text-white font-bold">Choose Image</p>
-                        <p className="text-xs text-gray-500 mt-1">PNG, JPG up to 6MB</p>
+                      <div className="text-center p-4">
+                        <ImageIcon className="w-6 h-6 text-indigo-600 mx-auto mb-1.5" />
+                        <p className="text-gray-900 dark:text-white font-bold text-sm">Choose Image</p>
+                        <p className="text-[10px] text-gray-500 mt-0.5">PNG, JPG up to 6MB</p>
                       </div>
                     )}
                   </div>
@@ -280,7 +312,7 @@ const AchievementsPage = () => {
                 </div>
 
                 <div className="flex items-center gap-3 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl mb-4">
-                  <AlertCircle className="w-5 h-5 text-indigo-600" />
+                  <AlertCircle className="w-5 h-5 text-indigo-600 shrink-0" />
                   <p className="text-xs text-indigo-700 dark:text-indigo-300 font-medium leading-relaxed">
                     Once uploaded, this will be visible to everyone on the campus portal.
                   </p>
@@ -289,7 +321,7 @@ const AchievementsPage = () => {
                 <button
                   type="submit"
                   disabled={isUploading}
-                  className="w-full bg-indigo-600 text-white font-black py-4 px-8 rounded-2xl hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 dark:shadow-none active:scale-[0.98] flex items-center justify-center space-x-2 disabled:opacity-50"
+                  className="w-full bg-indigo-600 text-white font-black py-3.5 px-8 rounded-2xl hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 dark:shadow-none active:scale-[0.98] flex items-center justify-center space-x-2 disabled:opacity-50 text-sm"
                 >
                   {isUploading ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -320,6 +352,13 @@ const AchievementsPage = () => {
               exit={{ opacity: 0, scale: 0.9 }}
               className="relative max-w-5xl w-full"
             >
+              <button 
+                onClick={(e) => handleDownloadImage(e, selectedImage, 'achievement')}
+                className="absolute -top-12 right-12 text-white hover:text-indigo-400 transition-colors"
+                title="Download Image"
+              >
+                <Download className="w-10 h-10 p-1.5" />
+              </button>
               <button 
                 onClick={() => setSelectedImage(null)}
                 className="absolute -top-12 right-0 text-white hover:text-indigo-400 transition-colors"
