@@ -62,11 +62,24 @@ export const createGuide = asyncHandler(async (req: any, res: Response) => {
     };
   }
 
+  let parsedLinks = [];
+  if (links) {
+    if (typeof links === 'string') {
+      try {
+        parsedLinks = JSON.parse(links);
+      } catch (e) {
+        parsedLinks = [];
+      }
+    } else if (Array.isArray(links)) {
+      parsedLinks = links;
+    }
+  }
+
   const guide = await CareerGuide.create({
     title,
     category: categoryId,
     content,
-    links: JSON.parse(links || '[]'),
+    links: parsedLinks,
     attachments: attachmentData ? [attachmentData] : [],
     createdBy: req.user._id
   });

@@ -125,6 +125,15 @@ const CareerGuidancePage = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const formatExternalUrl = (url: string) => {
+    if (!url) return '';
+    const trimmed = url.trim();
+    if (/^(https?:)?\/\//i.test(trimmed)) {
+      return trimmed;
+    }
+    return `https://${trimmed}`;
+  };
+
   useEffect(() => {
     fetchCategories();
   }, []);
@@ -202,11 +211,19 @@ const CareerGuidancePage = () => {
     
     setIsSubmitting(true);
     try {
-      const validLinks = guideForm.links.filter(l => l.title && l.url);
+      const validLinks = guideForm.links
+        .filter(l => l.url?.trim())
+        .map(l => ({
+          title: l.title?.trim() || 'Link',
+          url: l.url.trim()
+        }));
+
       await axios.post('/api/career/guides', {
-        ...guideForm,
+        title: guideForm.title,
+        content: guideForm.content,
+        attachment: guideForm.attachment,
         categoryId: selectedCategory._id,
-        links: JSON.stringify(validLinks)
+        links: validLinks
       });
       toast.success('Guide added!');
       setIsGuideModalOpen(false);
@@ -379,27 +396,17 @@ const CareerGuidancePage = () => {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
         <div className="flex items-center space-x-4">
-          {(selectedCategory || selectedGuide) && (
-            <button 
-              onClick={() => {
-                if (selectedGuide) {
-                  navigate(`/career/category/${selectedCategory._id}`);
-                } else {
-                  navigate('/career');
-                }
-              }}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-500" />
-            </button>
-          )}
+
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">
+            <h1 className={cn(
+              "font-black text-gray-900 dark:text-white tracking-tight",
+              (selectedCategory || selectedGuide) ? "text-xl sm:text-2xl" : "text-2xl sm:text-3xl"
+            )}>
               {selectedGuide ? selectedGuide.title : selectedCategory ? selectedCategory.name : 'Career Guidance'}
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1 font-medium italic">
+            <p className="text-gray-500 dark:text-gray-400 mt-0.5 text-xs sm:text-sm font-medium italic">
               {selectedGuide ? 'Detailed Roadmap' : selectedCategory ? selectedCategory.description : 'Expert advice for your professional growth'}
             </p>
           </div>
@@ -455,38 +462,41 @@ const CareerGuidancePage = () => {
               <motion.div
                 key={cat._id}
                 layout
-                whileHover={{ y: -4 }}
+                whileHover={{ y: -3 }}
                 onClick={() => navigate(`/career/category/${cat._id}`)}
-                className="group relative bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl transition-all cursor-pointer overflow-hidden"
+                className="group relative bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg transition-all cursor-pointer overflow-hidden flex flex-col justify-between"
               >
-                <div className="flex justify-between items-start mb-6">
-                  <div className="w-14 h-14 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Briefcase className="w-7 h-7" />
-                  </div>
-                  <div className="px-3 py-1 bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 rounded-full text-[10px] font-black uppercase tracking-widest">
+                {/* Branch Badge top right */}
+                <div className="absolute top-4 right-4 flex items-center space-x-1.5 z-10">
+                  <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-900/60 text-gray-500 dark:text-gray-400 rounded-full text-[9px] font-bold uppercase tracking-wider">
                     {cat.branch}
-                  </div>
-                </div>
-                <h3 className="text-xl font-black text-gray-900 dark:text-white group-hover:text-indigo-600 transition-colors">{cat.name}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 line-clamp-2 font-medium leading-relaxed">{cat.description}</p>
-                
-                <div className="mt-8 flex items-center text-indigo-600 dark:text-indigo-400 text-xs font-black uppercase tracking-widest">
-                  <span>Explore Guides</span>
-                  <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                  {isAuthorized && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteCategory(cat._id, e);
+                      }}
+                      className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      title="Delete Category"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
 
-                {isAuthorized && (
-                  <button
-                    onClick={(e) => handleDeleteCategory(cat._id, e)}
-                    className="absolute top-6 right-6 p-2 text-red-100 group-hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
+                <div className="flex items-center space-x-3 mb-3 pr-14">
+                  <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
+                    <Briefcase className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 transition-colors line-clamp-1">{cat.name}</h3>
+                </div>
+
+                <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 font-medium leading-relaxed">{cat.description}</p>
               </motion.div>
             ))
           ) : (
-            <div className="col-span-full py-20 bg-gray-50 dark:bg-gray-800/30 rounded-[3rem] border border-dashed border-gray-200 dark:border-gray-700 text-center">
+            <div className="col-span-full py-20 bg-gray-50 dark:bg-gray-800/30 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 text-center">
               <Briefcase className="w-12 h-12 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500 font-bold">No career categories available.</p>
             </div>
@@ -497,30 +507,23 @@ const CareerGuidancePage = () => {
         <motion.div
            initial={{ opacity: 0, x: 20 }}
            animate={{ opacity: 1, x: 0 }}
-           className="bg-white dark:bg-gray-800 p-8 md:p-12 rounded-[3rem] border border-gray-100 dark:border-gray-700 shadow-sm"
+           className="bg-white dark:bg-gray-800 p-8 md:p-12 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm"
         >
            <div className="max-w-4xl mx-auto space-y-10">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 dark:border-gray-700 pb-6">
-                <div>
-                  <span className="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full text-[10px] font-black uppercase tracking-widest">
+              <div className="flex flex-row items-center justify-between gap-3 border-b border-gray-100 dark:border-gray-700 pb-6">
+                <div className="min-w-0 flex-1">
+                  <span className="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full text-[9px] font-bold uppercase tracking-wider">
                     Career Guide
                   </span>
-                  <h2 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight mt-2">{selectedGuide.title}</h2>
+                  <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white tracking-tight mt-1 truncate">{selectedGuide.title}</h2>
                 </div>
-                <div className="flex flex-wrap items-center gap-3">
-                  <button 
-                     onClick={handleShare}
-                     className="flex items-center justify-center space-x-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-3.5 rounded-2xl transition-all font-bold active:scale-95 text-xs sm:text-sm"
-                  >
-                     <Share2 className="w-4 h-4" />
-                     <span>Share</span>
-                  </button>
+                <div className="flex-shrink-0">
                   <button 
                      onClick={downloadAsPDF}
-                     className="flex items-center justify-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3.5 rounded-2xl transition-all shadow-md font-bold active:scale-95 text-xs sm:text-sm"
+                     className="flex items-center justify-center space-x-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2.5 rounded-xl transition-all shadow-md font-bold active:scale-95 text-[10px] sm:text-xs whitespace-nowrap"
                   >
-                     <Download className="w-4 h-4" />
-                     <span>Download as PDF</span>
+                     <Download className="w-3.5 h-3.5" />
+                     <span>Download PDF</span>
                   </button>
                 </div>
               </div>
@@ -567,7 +570,7 @@ const CareerGuidancePage = () => {
                         {selectedGuide.links.map((link: any, idx: number) => (
                            <a
                              key={idx}
-                             href={link.url}
+                             href={formatExternalUrl(link.url)}
                              target="_blank"
                              rel="noreferrer"
                              className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-800 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all group"
@@ -601,7 +604,7 @@ const CareerGuidancePage = () => {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 onClick={() => navigate(`/career/category/${selectedCategory._id}/guide/${guide._id}`)}
-                className="group flex items-center justify-between bg-white dark:bg-gray-800 p-5 rounded-[1.5rem] border border-gray-100 dark:border-gray-700 shadow-sm hover:border-indigo-200 transition-all cursor-pointer"
+                className="group flex items-center justify-between bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:border-indigo-200 transition-all cursor-pointer"
               >
                 <div className="flex items-center space-x-4">
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 transition-colors uppercase tracking-tight">{guide.title}</h3>
@@ -633,7 +636,7 @@ const CareerGuidancePage = () => {
               </motion.div>
             ))
           ) : (
-            <div className="py-20 bg-gray-50 dark:bg-gray-800/30 rounded-[3rem] border border-dashed border-gray-200 dark:border-gray-700 text-center">
+            <div className="py-20 bg-gray-50 dark:bg-gray-800/30 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 text-center">
               <Briefcase className="w-12 h-12 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500 font-bold">No folders found in this category.</p>
             </div>
@@ -646,7 +649,7 @@ const CareerGuidancePage = () => {
         {isCategoryModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsCategoryModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-[2.5rem] shadow-2xl p-8 overflow-hidden">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 overflow-hidden">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-black text-gray-900 dark:text-white">New Category</h2>
                 <button onClick={() => setIsCategoryModalOpen(false)}><X className="w-6 h-6 text-gray-400" /></button>
@@ -705,17 +708,17 @@ const CareerGuidancePage = () => {
         {isGuideModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsGuideModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative w-full max-w-2xl bg-white dark:bg-gray-800 rounded-[2.5rem] shadow-2xl p-8 max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-black text-gray-900 dark:text-white">Add Career Folder</h2>
-                <button onClick={() => setIsGuideModalOpen(false)}><X className="w-6 h-6 text-gray-400" /></button>
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 max-h-[95vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-5">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Add Career Folder</h2>
+                <button onClick={() => setIsGuideModalOpen(false)}><X className="w-5 h-5 text-gray-400" /></button>
               </div>
-              <form onSubmit={handleCreateGuide} className="space-y-6">
+              <form onSubmit={handleCreateGuide} className="space-y-4">
                 <div>
                   <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Folder Name</label>
                   <input
                     required
-                    className="w-full px-4 py-3 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm font-bold"
+                    className="w-full px-3 py-2 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-xs font-bold focus:ring-1 focus:ring-indigo-500 outline-none"
                     placeholder="e.g. Python Interview Questions"
                     value={guideForm.title}
                     onChange={(e) => setGuideForm({...guideForm, title: e.target.value})}
@@ -724,8 +727,8 @@ const CareerGuidancePage = () => {
                 <div>
                   <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Detailed Content (Copy Paste Text)</label>
                   <textarea
-                    rows={6}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm font-medium"
+                    rows={4}
+                    className="w-full px-3 py-2 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-xs font-medium focus:ring-1 focus:ring-indigo-500 outline-none"
                     placeholder="Paste important guide content here..."
                     value={guideForm.content}
                     onChange={(e) => setGuideForm({...guideForm, content: e.target.value})}
@@ -738,20 +741,20 @@ const CareerGuidancePage = () => {
                     <div 
                       onClick={() => fileInputRef.current?.click()}
                       className={cn(
-                        "w-full h-32 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all",
+                        "w-full h-20 border-2 border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all",
                         guideForm.attachment ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/10" : "border-gray-200 dark:border-gray-700"
                       )}
                     >
                       {guideForm.attachment ? (
-                        <div className="text-center p-4">
-                          <FileText className="w-6 h-6 text-indigo-600 mx-auto" />
-                          <p className="text-[10px] font-bold mt-2 truncate max-w-[150px]">File Selected</p>
+                        <div className="text-center p-2">
+                          <FileText className="w-5 h-5 text-indigo-600 mx-auto" />
+                          <p className="text-[9px] font-bold mt-1 truncate max-w-[120px]">File Selected</p>
                         </div>
                       ) : (
-                        <>
-                          <ImageIcon className="w-6 h-6 text-gray-400" />
-                          <p className="text-[10px] font-bold text-gray-400 mt-2">Upload File</p>
-                        </>
+                        <div className="text-center p-2">
+                          <ImageIcon className="w-5 h-5 text-gray-400 mx-auto" />
+                          <p className="text-[9px] font-bold text-gray-400 mt-1">Upload File</p>
+                        </div>
                       )}
                     </div>
                     <input type="file" ref={fileInputRef} hidden onChange={handleFileChange} accept="application/pdf,image/*" />
@@ -764,7 +767,7 @@ const CareerGuidancePage = () => {
                            <div key={idx} className="flex gap-2">
                              <input 
                                placeholder="Label" 
-                               className="w-1/3 px-3 py-2 bg-gray-50 dark:bg-gray-900 rounded-lg text-[10px] font-bold border border-gray-100 dark:border-gray-700" 
+                               className="w-1/3 px-2 py-1.5 bg-gray-50 dark:bg-gray-900 rounded-lg text-[10px] font-bold border border-gray-100 dark:border-gray-700 focus:ring-1 focus:ring-indigo-500 outline-none" 
                                value={link.title}
                                onChange={(e) => {
                                  const newLinks = [...guideForm.links];
@@ -774,7 +777,7 @@ const CareerGuidancePage = () => {
                              />
                              <input 
                                placeholder="URL (http...)" 
-                               className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-900 rounded-lg text-[10px] font-medium border border-gray-100 dark:border-gray-700" 
+                               className="flex-1 px-2 py-1.5 bg-gray-50 dark:bg-gray-900 rounded-lg text-[10px] font-medium border border-gray-100 dark:border-gray-700 focus:ring-1 focus:ring-indigo-500 outline-none" 
                                value={link.url}
                                onChange={(e) => {
                                  const newLinks = [...guideForm.links];
@@ -793,16 +796,16 @@ const CareerGuidancePage = () => {
                   </div>
                 </div>
 
-                <div className="flex gap-3 pt-4">
+                <div className="flex gap-3 pt-2">
                   <button
                     type="button"
                     onClick={() => setIsGuideModalOpen(false)}
-                    className="flex-1 px-6 py-4 rounded-2xl border border-gray-200 dark:border-gray-700 text-gray-600 font-bold"
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 font-bold text-xs"
                   >Cancel</button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex-[2] bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-xl shadow-indigo-100 dark:shadow-none transition-all active:scale-95 disabled:opacity-50"
+                    className="flex-[2] bg-indigo-600 text-white font-bold py-2.5 rounded-xl shadow-md transition-all active:scale-95 disabled:opacity-50 text-xs"
                   >
                     {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'Post Folder'}
                   </button>
