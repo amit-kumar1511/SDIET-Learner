@@ -460,7 +460,7 @@ const SubjectPage = () => {
 
       {/* Chat Popup */}
       {isChatOpen && (
-        <div className="fixed bottom-4 right-4 left-4 sm:left-auto w-auto sm:w-96 h-[500px] max-h-[calc(100vh-6rem)] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col z-50 overflow-hidden">
+        <div className="fixed top-16 bottom-20 left-4 right-4 sm:top-auto sm:bottom-4 sm:right-4 sm:left-auto sm:w-96 sm:h-[500px] sm:max-h-[calc(100vh-6rem)] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col z-50 overflow-hidden">
           <div className="bg-indigo-600 p-4 flex justify-between items-center text-white">
             <h3 className="font-bold">Doubt Chat</h3>
             <button onClick={() => setIsChatOpen(false)} className="hover:bg-indigo-700 p-1 rounded">
@@ -490,7 +490,7 @@ const SubjectPage = () => {
             })}
             <div ref={chatEndRef} />
           </div>
-          <form onSubmit={handleSendMessage} className="p-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex gap-2">
+          <form onSubmit={handleSendMessage} className="p-3 pb-4 sm:pb-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex gap-2">
             <input
               type="text"
               value={newMessage}

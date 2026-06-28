@@ -26,7 +26,7 @@ const MainLayout = () => {
       {user && !isLandingPage && <MobileBottomNav />}
 
       {/* Student-only Academic Resource Assistant Chatbot */}
-      {user && user.role === 'STUDENT' && <StudentChatbot />}
+      {user && user.role === 'STUDENT' && location.pathname === '/dashboard' && <StudentChatbot />}
     </div>
   );
 };
