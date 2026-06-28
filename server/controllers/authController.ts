@@ -139,7 +139,6 @@ export const updateProfile = asyncHandler(async (req: any, res: Response) => {
 
   if (user) {
     user.name = req.body.name || user.name;
-    user.email = req.body.email || user.email;
     
     if (user.role === 'STUDENT') {
       user.semester = req.body.semester || user.semester;

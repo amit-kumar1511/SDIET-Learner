@@ -65,7 +65,7 @@ const ProfilePage = () => {
   if (!profile) return <div className="p-8 text-center text-gray-500">Loading profile...</div>;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in duration-500">
+    <form onSubmit={handleUpdate} className="max-w-3xl mx-auto space-y-8 animate-in fade-in duration-500">
       <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
         <div className="bg-indigo-600 h-32"></div>
         <div className="px-8 pb-8 relative">
@@ -85,7 +85,7 @@ const ProfilePage = () => {
           </div>
           
           {isEditing ? (
-            <form onSubmit={handleUpdate} className="space-y-4">
+            <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Name</label>
@@ -98,48 +98,16 @@ const ProfilePage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Email</label>
+                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1 text-gray-400/60">Email (Cannot be changed)</label>
                   <input
                     type="email"
-                    required
+                    disabled
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-450 dark:text-gray-500 cursor-not-allowed outline-none transition-all"
                   />
                 </div>
               </div>
-
-              <div className="flex justify-end space-x-3 mt-6">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsEditing(false);
-                    setFormData({
-                      name: profile.name,
-                      email: profile.email,
-                      semester: profile.semester || 1,
-                      rollNumber: profile.rollNumber || '',
-                    });
-                  }}
-                  className="px-6 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-600 dark:text-gray-300 font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center space-x-2"
-                >
-                  <X className="w-4 h-4" />
-                  <span>Cancel</span>
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all flex items-center space-x-2 disabled:opacity-50"
-                >
-                  {loading ? <span>Saving...</span> : (
-                    <>
-                      <Save className="w-4 h-4" />
-                      <span>Save Changes</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
+            </div>
           ) : (
             <>
               <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">{profile.name}</h1>
@@ -251,9 +219,44 @@ const ProfilePage = () => {
           </div>
         )}
       </div>
+      {/* Save / Cancel Changes Buttons at the bottom */}
+      {isEditing && (
+        <div className="flex justify-center space-x-4 mt-6">
+          <button
+            type="button"
+            onClick={() => {
+              setIsEditing(false);
+              setFormData({
+                name: profile.name,
+                email: profile.email,
+                semester: profile.semester || 1,
+                rollNumber: profile.rollNumber || '',
+              });
+            }}
+            className="px-8 py-3 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-2xl text-gray-600 dark:text-gray-300 font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center space-x-2 shadow-sm"
+          >
+            <X className="w-5 h-5" />
+            <span>Cancel</span>
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-8 py-3 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-700 transition-all flex items-center space-x-2 disabled:opacity-50 shadow-sm"
+          >
+            {loading ? <span>Saving...</span> : (
+              <>
+                <Save className="w-5 h-5" />
+                <span>Save Changes</span>
+              </>
+            )}
+          </button>
+        </div>
+      )}
+
       {/* Logout Button */}
-      <div className="flex justify-center pb-6">
+      <div className="flex justify-center pb-6 mt-6">
         <button
+          type="button"
           onClick={() => setShowLogoutDialog(true)}
           className="flex items-center space-x-2 px-8 py-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-2xl font-bold hover:bg-red-100 dark:hover:bg-red-900/40 transition-all hover:shadow-md active:scale-95"
         >
@@ -288,12 +291,14 @@ const ProfilePage = () => {
             {/* Buttons */}
             <div className="flex gap-3">
               <button
+                type="button"
                 onClick={() => setShowLogoutDialog(false)}
                 className="flex-1 py-3 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-2xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
               >
                 Cancel
               </button>
               <button
+                type="button"
                 onClick={() => {
                   logout();
                   navigate('/');
@@ -307,7 +312,7 @@ const ProfilePage = () => {
           </div>
         </div>
       )}
-    </div>
+    </form>
   );
 };
 

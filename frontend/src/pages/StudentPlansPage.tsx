@@ -201,6 +201,13 @@ export default function StudentPlansPage() {
     fetchPlans();
   }, []);
 
+  // Initialize contentEditable editor innerHTML when modal opens
+  useEffect(() => {
+    if (isFormModalOpen && editorRef.current) {
+      editorRef.current.innerHTML = editingPlan ? editingPlan.content : '';
+    }
+  }, [isFormModalOpen, editingPlan]);
+
   const fetchPlans = async () => {
     setIsLoading(true);
     try {
@@ -221,8 +228,8 @@ export default function StudentPlansPage() {
       category: 'today',
       startDate: todayStr,
       targetDate: todayStr,
-      content: '<div>Start writing your plan notes here...</div>',
-      plainTextContent: 'Start writing your plan notes here...',
+      content: '',
+      plainTextContent: '',
       status: 'pending'
     });
     setIsFormModalOpen(true);
@@ -266,8 +273,8 @@ export default function StudentPlansPage() {
 
   const handleResetEditor = () => {
     if (editorRef.current) {
-      const originalContent = editingPlan ? editingPlan.content : '<div>Start writing your plan notes here...</div>';
-      const originalPlainText = editingPlan ? editingPlan.plainTextContent : 'Start writing your plan notes here...';
+      const originalContent = editingPlan ? editingPlan.content : '';
+      const originalPlainText = editingPlan ? editingPlan.plainTextContent : '';
       editorRef.current.innerHTML = originalContent;
       setForm(prev => ({
         ...prev,
@@ -389,7 +396,7 @@ export default function StudentPlansPage() {
     <div className="space-y-8 animate-in fade-in duration-300">
       
       {/* Header Block */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
             <span>Student Todo / Plan Notes</span>
@@ -458,7 +465,7 @@ export default function StudentPlansPage() {
                 setViewingPlan(plan);
                 setIsViewModalOpen(true);
               }}
-              className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 p-6 flex flex-col justify-between shadow-sm hover:shadow-xl hover:border-indigo-200 transition-all duration-300 relative group overflow-hidden cursor-pointer"
+              className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 flex flex-col justify-between shadow-sm hover:shadow-xl hover:border-indigo-200 transition-all duration-300 relative group overflow-hidden cursor-pointer"
             >
               <div>
                 <div className="flex justify-between items-start mb-4">
@@ -566,8 +573,8 @@ export default function StudentPlansPage() {
         </div>
       ) : (
         /* Empty State */
-        <div className="py-20 bg-white dark:bg-gray-800 rounded-[3rem] border border-gray-100 dark:border-gray-700 text-center shadow-sm max-w-lg mx-auto">
-          <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
+        <div className="py-20 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 text-center shadow-sm max-w-lg mx-auto">
+          <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <FileText className="w-10 h-10" />
           </div>
           <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">No Planner Found</h3>
@@ -599,7 +606,7 @@ export default function StudentPlansPage() {
               initial={{ opacity: 0, scale: 0.95 }} 
               animate={{ opacity: 1, scale: 1 }} 
               exit={{ opacity: 0, scale: 0.95 }} 
-              className="relative w-full max-w-2xl bg-white dark:bg-gray-800 rounded-[2.5rem] shadow-2xl p-6 sm:p-8 max-h-[90vh] overflow-y-auto"
+              className="relative w-full max-w-2xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 sm:p-8 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-black text-gray-900 dark:text-white">
@@ -805,9 +812,10 @@ export default function StudentPlansPage() {
                     key={editingPlan ? editingPlan._id : 'new-plan'}
                     ref={editorRef}
                     contentEditable
-                    className="w-full min-h-[180px] p-4 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-b-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-medium overflow-y-auto text-gray-900 dark:text-white"
+                    suppressContentEditableWarning
+                    data-placeholder="Start writing your plan notes here..."
+                    className="w-full min-h-[180px] p-4 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-b-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-medium overflow-y-auto text-gray-900 dark:text-white relative before:content-[attr(data-placeholder)] before:text-gray-400 dark:before:text-gray-500 before:absolute before:top-4 before:left-4 before:pointer-events-none empty:before:block before:hidden"
                     onInput={handleEditorInput}
-                    dangerouslySetInnerHTML={{ __html: form.content }}
                   />
                 </div>
 
@@ -850,7 +858,7 @@ export default function StudentPlansPage() {
               initial={{ opacity: 0, scale: 0.95 }} 
               animate={{ opacity: 1, scale: 1 }} 
               exit={{ opacity: 0, scale: 0.95 }} 
-              className="relative w-full max-w-xl bg-white dark:bg-gray-800 rounded-[2.5rem] shadow-2xl p-6 sm:p-8 max-h-[85vh] overflow-y-auto border border-gray-100 dark:border-gray-700"
+              className="relative w-full max-w-xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 sm:p-8 max-h-[85vh] overflow-y-auto border border-gray-100 dark:border-gray-700"
             >
               <div className="flex justify-between items-start mb-6">
                 <div>
