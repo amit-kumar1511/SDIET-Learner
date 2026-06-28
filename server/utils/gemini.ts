@@ -2,7 +2,7 @@ import { GoogleGenAI } from '@google/genai';
 import axios from 'axios';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as pdfParse from 'pdf-parse';
+import { PDFParse } from 'pdf-parse';
 
 let aiInstance: GoogleGenAI | null = null;
 
@@ -40,9 +40,10 @@ export async function extractTextFromPdf(fileUrl: string): Promise<string> {
       pdfBuffer = fs.readFileSync(localPath);
     }
 
-    const fn = (pdfParse as any).default || pdfParse;
-    const parsedData = await fn(pdfBuffer);
+    const parser = new PDFParse({ data: pdfBuffer });
+    const parsedData = await parser.getText();
     const extracted = parsedData.text || '';
+    await parser.destroy();
     console.log(`PDF text extraction success. Length: ${extracted.length}`);
     return extracted;
   } catch (err: any) {
