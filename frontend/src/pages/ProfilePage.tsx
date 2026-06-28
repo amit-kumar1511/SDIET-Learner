@@ -219,6 +219,7 @@ const ProfilePage = () => {
           </div>
         )}
       </div>
+
       {/* Save / Cancel Changes Buttons at the bottom */}
       {isEditing && (
         <div className="flex justify-center space-x-4 mt-6">

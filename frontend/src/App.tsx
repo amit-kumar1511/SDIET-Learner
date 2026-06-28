@@ -28,6 +28,7 @@ import AchievementsPage from './pages/AchievementsPage';
 import CareerGuidancePage from './pages/CareerGuidancePage';
 import AITeacherPage from './pages/AITeacherPage';
 import StudentPlansPage from './pages/StudentPlansPage';
+import StudentsPage from './pages/StudentsPage';
 
 export default function App() {
   return (
@@ -76,6 +77,7 @@ export default function App() {
               {/* Admin Only Routes */}
               <Route element={<ProtectedRoute allowedRoles={['SUPER_ADMIN', 'TEACHER']} />}>
                 <Route path="doubts" element={<DoubtsPage />} />
+                <Route path="students" element={<StudentsPage />} />
               </Route>
               
               <Route element={<ProtectedRoute allowedRoles={['SUPER_ADMIN']} />}>

@@ -107,6 +107,11 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
   const user = await User.findOne({ email });
 
   if (user && (await bcrypt.compare(password, user.password))) {
+    if (user.isBlocked) {
+      res.status(403);
+      throw new Error('Your account has been blocked. Please contact the administrator.');
+    }
+
     res.json({
       _id: user._id,
       name: user.name,
@@ -231,4 +236,92 @@ export const deleteTeacher = asyncHandler(async (req: Request, res: Response) =>
     res.status(404);
     throw new Error('Teacher not found');
   }
+});
+
+export const getStudents = asyncHandler(async (req: any, res: Response) => {
+  const { branch, semester, search } = req.query;
+
+  let query: any = { role: 'STUDENT' };
+
+  if (req.user.role === 'TEACHER') {
+    const authBranches = req.user.authorizedBranches || [];
+    const authSemesters = req.user.authorizedSemesters || [];
+
+    query.branch = { $in: authBranches };
+    query.semester = { $in: authSemesters };
+  }
+
+  // Branch filter
+  if (branch && branch !== 'ALL') {
+    if (req.user.role === 'TEACHER') {
+      if (req.user.authorizedBranches?.includes(branch)) {
+        query.branch = branch;
+      } else {
+        return res.status(200).json([]);
+      }
+    } else {
+      query.branch = branch;
+    }
+  }
+
+  // Semester filter
+  if (semester && semester !== 'ALL') {
+    const semNum = parseInt(semester);
+    if (req.user.role === 'TEACHER') {
+      if (req.user.authorizedSemesters?.includes(semNum)) {
+        query.semester = semNum;
+      } else {
+        return res.status(200).json([]);
+      }
+    } else {
+      query.semester = semNum;
+    }
+  }
+
+  // Text search
+  if (search) {
+    query.$or = [
+      { name: { $regex: search, $options: 'i' } },
+      { email: { $regex: search, $options: 'i' } },
+      { rollNumber: { $regex: search, $options: 'i' } }
+    ];
+  }
+
+  const students = await User.find(query).select('-password').sort({ name: 1 });
+  res.json(students);
+});
+
+export const toggleBlockUser = asyncHandler(async (req: any, res: Response) => {
+  const { id } = req.params;
+  const { block } = req.body;
+
+  const user = await User.findById(id);
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  if (user.role === 'SUPER_ADMIN') {
+    res.status(403);
+    throw new Error('Cannot block/unblock administrators');
+  }
+
+  if (req.user.role === 'TEACHER') {
+    if (user.role !== 'STUDENT') {
+      res.status(403);
+      throw new Error('Teachers can only block/unblock students');
+    }
+    const authBranches = req.user.authorizedBranches || [];
+    const authSemesters = req.user.authorizedSemesters || [];
+
+    if (!authBranches.includes(user.branch) || !authSemesters.includes(user.semester)) {
+      res.status(403);
+      throw new Error('Not authorized to block/unblock this student (out of teaching scope)');
+    }
+  }
+
+  user.isBlocked = block;
+  await user.save();
+
+  res.json({ message: `User ${block ? 'blocked' : 'unblocked'} successfully`, user });
 });

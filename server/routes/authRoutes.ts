@@ -1,6 +1,6 @@
 import express from 'express';
-import { registerStudent, loginUser, getProfile, updateProfile, registerTeacher, getTeachers, deleteTeacher, sendOtp } from '../controllers/authController.js';
-import { protect, admin } from '../middlewares/authMiddleware.js';
+import { registerStudent, loginUser, getProfile, updateProfile, registerTeacher, getTeachers, deleteTeacher, sendOtp, getStudents, toggleBlockUser } from '../controllers/authController.js';
+import { protect, admin, teacherOrAdmin } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
@@ -14,5 +14,9 @@ router.put('/profile', protect, updateProfile);
 router.post('/teacher', protect, admin, registerTeacher);
 router.get('/teachers', protect, admin, getTeachers);
 router.delete('/teacher/:id', protect, admin, deleteTeacher);
+
+// Student directory & block routes (Admin and Teacher)
+router.get('/students', protect, teacherOrAdmin, getStudents);
+router.post('/students/toggle-block/:id', protect, teacherOrAdmin, toggleBlockUser);
 
 export default router;

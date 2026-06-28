@@ -24,6 +24,11 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
         res.status(401).json({ message: 'Not authorized, user not found' });
         return;
       }
+
+      if (req.user.isBlocked) {
+        res.status(403).json({ message: 'Your account has been blocked. Please contact the administrator.' });
+        return;
+      }
       
       next();
       return;

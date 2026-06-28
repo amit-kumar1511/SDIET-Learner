@@ -179,13 +179,22 @@ const Navbar = () => {
                       <UserIcon className="w-4 h-4 mr-2" /> Profile
                     </Link>
                     {(user.role === 'TEACHER' || user.role === 'SUPER_ADMIN') && (
-                      <Link 
-                        to="/doubts" 
-                        onClick={() => setIsDropdownOpen(false)}
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      >
-                        <MessageCircle className="w-4 h-4 mr-2" /> Doubts
-                      </Link>
+                      <>
+                        <Link 
+                          to="/doubts" 
+                          onClick={() => setIsDropdownOpen(false)}
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        >
+                          <MessageCircle className="w-4 h-4 mr-2" /> Doubts
+                        </Link>
+                        <Link 
+                          to="/students" 
+                          onClick={() => setIsDropdownOpen(false)}
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        >
+                          <GraduationCap className="w-4 h-4 mr-2" /> Students
+                        </Link>
+                      </>
                     )}
                     {user.role === 'SUPER_ADMIN' && (
                       <Link 

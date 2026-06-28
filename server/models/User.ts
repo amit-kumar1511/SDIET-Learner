@@ -14,6 +14,9 @@ const userSchema = new mongoose.Schema({
   // Teacher specific
   authorizedBranches: [{ type: String }],
   authorizedSemesters: [{ type: Number }],
+
+  // Block status
+  isBlocked: { type: Boolean, default: false },
 }, { timestamps: true });
 
 export const User = mongoose.model('User', userSchema);
