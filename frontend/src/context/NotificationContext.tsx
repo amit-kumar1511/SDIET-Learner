@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
+import { API_BASE_URL } from '../config/api';
 
 interface Notification {
   _id: string;
@@ -34,7 +35,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const fetchNotifications = useCallback(async () => {
     if (!user) return;
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/notifications`, {
+      const response = await fetch(`${API_BASE_URL}/api/notifications`, {
         headers: {
           'Authorization': `Bearer ${user.token}`
         }
@@ -51,7 +52,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const markAsRead = async (id: string) => {
     if (!user) return;
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/notifications/${id}/read`, {
+      const response = await fetch(`${API_BASE_URL}/api/notifications/${id}/read`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${user.token}`
@@ -68,7 +69,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const markAllAsRead = async () => {
     if (!user) return;
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/notifications/read-all`, {
+      const response = await fetch(`${API_BASE_URL}/api/notifications/read-all`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${user.token}`
@@ -85,7 +86,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   useEffect(() => {
     if (user) {
       fetchNotifications();
-      const newSocket = io(import.meta.env.VITE_API_URL || undefined);
+      const newSocket = io(API_BASE_URL);
       setSocket(newSocket);
 
       newSocket.on('connect', () => {

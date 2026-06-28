@@ -4,8 +4,9 @@ import axios from 'axios';
 import App from './App.tsx';
 import './index.css';
 import { registerSW } from 'virtual:pwa-register';
+import { API_BASE_URL } from './config/api';
 
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || '';
+axios.defaults.baseURL = API_BASE_URL;
 
 const updateSW = registerSW({
   onNeedRefresh() {
