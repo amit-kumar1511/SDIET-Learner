@@ -30,7 +30,9 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: allowedOrigins,
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
@@ -80,7 +82,10 @@ app.get("/", (req, res) => {
 
 // API Routes
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' });
+  res.json({
+    success: true,
+    message: "Backend is running"
+  });
 });
 
 app.use('/api/auth', authRoutes);
