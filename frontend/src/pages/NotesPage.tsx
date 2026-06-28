@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { Book, Plus, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { showConfirm } from '../lib/confirm';
+import { Skeleton } from '../components/ui/Skeleton';
 
 const BRANCHES = ['BTECH', 'BBA', 'BCA', 'MBA', 'MCA', 'BCOM', 'MTECH', 'DIPLOMA'];
 const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -12,6 +13,7 @@ const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
 const NotesPage = () => {
   const { user } = useAuth();
   const [subjects, setSubjects] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState(
     user?.role === 'STUDENT' ? user.branch : 'BTECH'
   );
@@ -37,6 +39,7 @@ const NotesPage = () => {
   }, [selectedBranch, selectedSemester, user]);
 
   const fetchSubjects = async () => {
+    setLoading(true);
     try {
       const url = user?.role === 'TEACHER' 
         ? '/api/subjects' // Controller already filters by assignments for TEACHER role
@@ -46,6 +49,8 @@ const NotesPage = () => {
     } catch (error) {
       toast.error('Failed to load subjects');
       setSubjects([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -152,50 +157,70 @@ const NotesPage = () => {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {subjects.map(subject => (
-          <Link key={subject._id} to={`/subject/${subject._id}`} className="group block">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 h-full flex flex-col relative">
-              {/* Branch and Semester Tags and Delete Button in corner */}
-              <div className="absolute top-4 right-4 flex items-center space-x-2 z-10">
-                <span className="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded-full text-[10px] font-bold uppercase">
-                  {subject.branch}
-                </span>
-                <span className="px-2 py-0.5 bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 rounded-full text-[10px] font-bold whitespace-nowrap">
-                  Sem {subject.semester}
-                </span>
-                {user?.role === 'SUPER_ADMIN' && (
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleDeleteClick(subject);
-                    }}
-                    className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                    title="Delete Subject"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-
-              <div className="flex items-center space-x-4 mb-4 pr-24">
-                <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg flex items-center justify-center flex-shrink-0">
-                  {subject.logoUrl ? (
-                    <img src={subject.logoUrl} alt={subject.name} className="w-8 h-8 object-contain" />
-                  ) : (
-                    <Book className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-                  )}
+        {loading ? (
+          Array.from({ length: 6 }).map((_, idx) => (
+            <div key={idx} className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 h-[160px] flex flex-col justify-between">
+              <div className="flex items-center space-x-4 mb-4">
+                <Skeleton className="w-12 h-12 rounded-lg flex-shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-3/4 rounded" />
+                  <Skeleton className="h-3 w-1/2 rounded" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2">{subject.name}</h3>
               </div>
-              <p className="text-gray-500 dark:text-gray-400 text-sm flex-grow line-clamp-3">{subject.description}</p>
+              <div className="space-y-2 flex-grow">
+                <Skeleton className="h-3 w-full rounded" />
+                <Skeleton className="h-3 w-5/6 rounded" />
+              </div>
             </div>
-          </Link>
-        ))}
-        {subjects.length === 0 && (
-          <div className="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
-            No subjects found for this branch and semester.
-          </div>
+          ))
+        ) : (
+          <>
+            {subjects.map(subject => (
+              <Link key={subject._id} to={`/subject/${subject._id}`} className="group block">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 h-full flex flex-col relative">
+                  {/* Branch and Semester Tags and Delete Button in corner */}
+                  <div className="absolute top-4 right-4 flex items-center space-x-2 z-10">
+                    <span className="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded-full text-[10px] font-bold uppercase">
+                      {subject.branch}
+                    </span>
+                    <span className="px-2 py-0.5 bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 rounded-full text-[10px] font-bold whitespace-nowrap">
+                      Sem {subject.semester}
+                    </span>
+                    {user?.role === 'SUPER_ADMIN' && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleDeleteClick(subject);
+                        }}
+                        className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                        title="Delete Subject"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center space-x-4 mb-4 pr-24">
+                    <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg flex items-center justify-center flex-shrink-0">
+                      {subject.logoUrl ? (
+                        <img src={subject.logoUrl} alt={subject.name} className="w-8 h-8 object-contain" />
+                      ) : (
+                        <Book className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                      )}
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2">{subject.name}</h3>
+                  </div>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm flex-grow line-clamp-3">{subject.description}</p>
+                </div>
+              </Link>
+            ))}
+            {!loading && subjects.length === 0 && (
+              <div className="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
+                No subjects found for this branch and semester.
+              </div>
+            )}
+          </>
         )}
       </div>
 

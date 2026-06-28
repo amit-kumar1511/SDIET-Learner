@@ -16,6 +16,8 @@ const AdminPage = () => {
   const [isLoadingTeachers, setIsLoadingTeachers] = useState(false);
   const [isLoadingAssignments, setIsLoadingAssignments] = useState(false);
   const [isLoadingSubjects, setIsLoadingSubjects] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [isAssigning, setIsAssigning] = useState(false);
   
   // Assignment state
   const [assignments, setAssignments] = useState<any[]>([]);
@@ -86,8 +88,8 @@ const AdminPage = () => {
   };
 
   const handleRegisterTeacher = async (e: React.FormEvent) => {
-    // ... (existing logic)
     e.preventDefault();
+    setIsRegistering(true);
     try {
       await axios.post('/api/auth/teacher', formData);
       toast.success('Teacher registered successfully');
@@ -96,6 +98,8 @@ const AdminPage = () => {
       fetchTeachers();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Registration failed');
+    } finally {
+      setIsRegistering(false);
     }
   };
 
@@ -105,6 +109,7 @@ const AdminPage = () => {
       return toast.error('Please select teacher and at least one subject');
     }
 
+    setIsAssigning(true);
     try {
       await axios.post('/api/assignments', {
         teacherId: assignmentForm.teacherId,
@@ -117,6 +122,8 @@ const AdminPage = () => {
       fetchAssignments();
     } catch (error) {
       toast.error('Failed to assign subjects');
+    } finally {
+      setIsAssigning(false);
     }
   };
 
@@ -332,17 +339,35 @@ const AdminPage = () => {
                       </div>
                     ))
                   ) : (
-                    availableSubjects.map(subject => (
-                      <label key={subject._id} className="flex items-center p-2 hover:bg-gray-50 dark:hover:bg-gray-900 rounded-lg cursor-pointer transition-colors">
-                        <input
-                          type="checkbox"
-                          checked={assignmentForm.selectedSubjectIds.includes(subject._id)}
-                          onChange={() => toggleSubjectSelection(subject._id)}
-                          className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
-                        />
-                        <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">{subject.name}</span>
-                      </label>
-                    ))
+                    availableSubjects.map(subject => {
+                      const isAlreadyAssigned = assignments.some((a: any) => {
+                        const tId = typeof a.teacherId === 'object' ? a.teacherId?._id : a.teacherId;
+                        const sId = typeof a.subjectId === 'object' ? a.subjectId?._id : a.subjectId;
+                        return tId === assignmentForm.teacherId && sId === subject._id;
+                      });
+
+                      return isAlreadyAssigned ? (
+                        <div key={subject._id} className="flex items-center p-2 bg-blue-50/50 dark:bg-blue-950/20 rounded-lg cursor-not-allowed border border-blue-100/40 dark:border-blue-900/30">
+                          <div className="w-4 h-4 rounded bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-sm shadow-blue-500/20">
+                            <svg className="w-3 h-3 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                          <span className="ml-3 text-sm font-semibold text-blue-750 dark:text-blue-400 flex-grow select-none">{subject.name}</span>
+                          <span className="text-[9px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/40 px-2 py-0.5 rounded-full select-none">Assigned</span>
+                        </div>
+                      ) : (
+                        <label key={subject._id} className="flex items-center p-2 hover:bg-gray-50 dark:hover:bg-gray-900 rounded-lg cursor-pointer transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={assignmentForm.selectedSubjectIds.includes(subject._id)}
+                            onChange={() => toggleSubjectSelection(subject._id)}
+                            className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                          />
+                          <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">{subject.name}</span>
+                        </label>
+                      );
+                    })
                   )}
                   {!isLoadingSubjects && availableSubjects.length === 0 && (
                     <div className="text-center py-4 text-xs text-gray-500">No subjects found for this selection.</div>
@@ -352,9 +377,10 @@ const AdminPage = () => {
 
               <button
                 type="submit"
-                className="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition-all shadow-md"
+                disabled={isAssigning}
+                className="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition-all shadow-md disabled:opacity-50 flex items-center justify-center space-x-2"
               >
-                Assign Selected Subjects
+                {isAssigning ? 'Assigning...' : 'Assign Selected Subjects'}
               </button>
             </form>
           </div>
@@ -592,9 +618,10 @@ const AdminPage = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                  disabled={isRegistering}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-semibold"
                 >
-                  Register Teacher
+                  {isRegistering ? 'Registering...' : 'Register Teacher'}
                 </button>
               </div>
             </form>

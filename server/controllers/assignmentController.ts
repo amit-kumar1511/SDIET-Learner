@@ -34,13 +34,13 @@ export const assignSubjects = asyncHandler(async (req: Request, res: Response) =
     }
   }));
 
-  // Send assignment email
-  await sendAssignmentMail({
+  // Send assignment email in background
+  sendAssignmentMail({
     to: teacher.email,
     branch,
     semester,
     subjects: subjectNames
-  });
+  }).catch(err => console.error("Error sending assignment email in background:", err));
 
   res.status(201).json(assignments.filter(a => a !== null));
 });

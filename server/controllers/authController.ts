@@ -199,11 +199,12 @@ export const registerTeacher = asyncHandler(async (req: Request, res: Response) 
   });
 
   if (user) {
-    await sendTeacherMail({
+    sendTeacherMail({
       to: user.email,
       password,
       subjectName: subjectName || 'N/A'
-    });
+    }).catch(err => console.error("Error sending teacher welcome mail in background:", err));
+
     res.status(201).json({
       _id: user._id,
       name: user.name,
