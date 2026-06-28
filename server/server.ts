@@ -21,14 +21,19 @@ import { createServer } from 'http';
 // config initialized above
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3001;
 
 const allowedOrigins = [
   'https://sdiet-learner.vercel.app',
   'http://localhost:5173'
 ];
-if (process.env.FRONTEND_URL && !allowedOrigins.includes(process.env.FRONTEND_URL)) {
-  allowedOrigins.push(process.env.FRONTEND_URL);
+if (process.env.FRONTEND_URL) {
+  const urls = process.env.FRONTEND_URL.split(',').map(url => url.trim());
+  urls.forEach(url => {
+    if (url && !allowedOrigins.includes(url)) {
+      allowedOrigins.push(url);
+    }
+  });
 }
 
 app.use(cors({

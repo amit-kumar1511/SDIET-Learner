@@ -6,6 +6,10 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
+  const rawApiUrl = env.VITE_API_BASE_URL || env.VITE_API_URL || 'http://localhost:3001';
+  const proxyTarget = rawApiUrl.includes(',')
+    ? rawApiUrl.split(',').map((u: string) => u.trim()).find((u: string) => u.includes('localhost') || u.includes('127.0.0.1')) || rawApiUrl.split(',')[0].trim()
+    : rawApiUrl;
   return {
     plugins: [
       react(),
@@ -31,12 +35,49 @@ export default defineConfig(({ mode }) => {
               src: 'icon-512.png',
               sizes: '512x512',
               type: 'image/png'
+            },
+            {
+              src: 'icon-512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any'
+            },
+            {
+              src: 'icon-512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'maskable'
             }
           ]
         },
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],
           runtimeCaching: [
+            {
+              urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'google-fonts',
+                expiration: {
+                  maxEntries: 10,
+                  maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+                }
+              }
+            },
+            {
+              urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'image-cache',
+                expiration: {
+                  maxEntries: 50,
+                  maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+                },
+                cacheableResponse: {
+                  statuses: [0, 200]
+                }
+              }
+            },
             {
               urlPattern: /^https:\/\/images\.unsplash\.com\/.*/i,
               handler: 'CacheFirst',
@@ -84,11 +125,11 @@ export default defineConfig(({ mode }) => {
       hmr: process.env.DISABLE_HMR !== 'true',
       proxy: {
         '/api': {
-          target: env.VITE_API_BASE_URL || env.VITE_API_URL || 'http://localhost:5000',
+          target: proxyTarget,
           changeOrigin: true,
         },
         '/socket.io': {
-          target: env.VITE_API_BASE_URL || env.VITE_API_URL || 'http://localhost:5000',
+          target: proxyTarget,
           ws: true,
         },
       },
