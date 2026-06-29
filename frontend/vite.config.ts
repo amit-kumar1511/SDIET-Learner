@@ -25,10 +25,11 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'SDIET Learner',
           short_name: 'SDIET',
-          description: 'College Learning Management Portal',
+          description: 'College Learning Management Portal v2',
           theme_color: '#0f172a',
           background_color: '#0f172a',
           display: 'standalone',
+          orientation: 'portrait',
           start_url: '/',
           scope: '/',
           icons: [
