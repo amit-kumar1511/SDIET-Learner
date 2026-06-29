@@ -35,8 +35,8 @@ export default function App() {
     <AuthProvider>
       <NotificationProvider>
         <Router>
-          <Toaster 
-            position="top-right" 
+          <Toaster
+            position="top-right"
             toastOptions={{
               duration: 1500,
               style: {
@@ -51,7 +51,7 @@ export default function App() {
               <Route index element={<LandingPage />} />
               <Route path="login" element={<Login />} />
               <Route path="register" element={<Register />} />
-              
+
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>
                 <Route path="dashboard" element={<Dashboard />} />
@@ -73,12 +73,12 @@ export default function App() {
                 <Route path="student-plans/create-plan" element={<CreatePlanPage />} />
               </Route>
 
-              {/* Admin Only Routes */}
+              {/* Admin Only Routessss */}
               <Route element={<ProtectedRoute allowedRoles={['SUPER_ADMIN', 'TEACHER']} />}>
                 <Route path="doubts" element={<DoubtsPage />} />
                 <Route path="students" element={<StudentsPage />} />
               </Route>
-              
+
               <Route element={<ProtectedRoute allowedRoles={['SUPER_ADMIN']} />}>
                 <Route path="admin" element={<AdminPage />} />
               </Route>
