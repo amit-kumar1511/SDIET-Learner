@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Download, Check } from 'lucide-react';
-import toast from 'react-hot-toast';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: Array<string>;
@@ -39,10 +38,6 @@ export const InstallPWAButton: React.FC = () => {
       setIsInstallable(false);
       setIsInstalled(true);
       setDeferredPrompt(null);
-      toast.success("App installed successfully. Icon may appear on home screen/app drawer in a few seconds.", {
-        duration: 6000,
-        position: 'top-center'
-      });
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
