@@ -84,18 +84,18 @@ const Register = () => {
    };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center py-12 px-4">
-      <div className="w-full max-w-md transition-all duration-500 bg-white dark:bg-gray-800 rounded-[2.5rem] shadow-2xl p-8 md:p-12 border border-gray-100 dark:border-gray-700">
-        <div className="text-center mb-10">
-          <div className="flex flex-col items-center mb-6">
-            <span className="text-5xl font-black tracking-tighter text-indigo-600 dark:text-indigo-400 leading-none">SDIET</span>
-            <span className="text-xs uppercase tracking-[0.5em] font-extrabold text-gray-400 dark:text-gray-500 mt-2">Learner Portal</span>
+    <div className="min-h-[80vh] flex items-center justify-center">
+      <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-gray-700">
+        <div className="text-center mb-8">
+          <div className="flex flex-col items-center mb-4">
+            <span className="text-4xl font-black tracking-tighter text-indigo-600 dark:text-indigo-400 leading-none">SDIET</span>
+            <span className="text-xs uppercase tracking-[0.4em] font-extrabold text-gray-400 dark:text-gray-500 mt-1">Learner Portal</span>
           </div>
           
-          <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
             Student Registration
           </h2>
-          <p className="text-gray-500 dark:text-gray-400 mt-2 font-medium">Create your academic account</p>
+          <p className="text-gray-500 dark:text-gray-400 mt-2">Create your academic account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">

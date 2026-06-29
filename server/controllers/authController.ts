@@ -327,3 +327,77 @@ export const toggleBlockUser = asyncHandler(async (req: any, res: Response) => {
 
   res.json({ message: `User ${block ? 'blocked' : 'unblocked'} successfully`, user });
 });
+
+export const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  if (!email) {
+    res.status(400);
+    throw new Error('Please provide an email');
+  }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    res.status(404);
+    throw new Error('User with this email does not exist');
+  }
+
+  // Generate 4 digit OTP
+  const otp = Math.floor(1000 + Math.random() * 9000).toString();
+
+  // Save/Update OTP in DB
+  await Otp.findOneAndUpdate(
+    { email },
+    { otp, createdAt: new Date() },
+    { upsert: true, new: true }
+  );
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+      <h2 style="color: #2c3e50; text-align: center;">Reset Password OTP 🔐</h2>
+      <p style="font-size: 16px; color: #34495e;">Use the following OTP to reset your password:</p>
+      <div style="background-color: #f9f9f9; padding: 20px; border-radius: 10px; text-align: center; margin: 20px 0;">
+        <h1 style="font-size: 32px; letter-spacing: 5px; color: #4f46e5; margin: 0;">${otp}</h1>
+      </div>
+      <p style="font-size: 14px; color: #7f8c8d; text-align: center;">This OTP is valid for 5 minutes. Do not share it with anyone.</p>
+    </div>
+  `;
+
+  await sendEmail(email, 'Your Reset Password OTP', html);
+
+  res.status(200).json({ message: 'Password reset OTP sent successfully' });
+});
+
+export const resetPassword = asyncHandler(async (req: Request, res: Response) => {
+  const { email, otp, newPassword } = req.body;
+
+  if (!email || !otp || !newPassword) {
+    res.status(400);
+    throw new Error('Please fill all required fields');
+  }
+
+  // Verify OTP
+  const otpRecord = await Otp.findOne({ email, otp });
+  if (!otpRecord) {
+    res.status(400);
+    throw new Error('Invalid or expired OTP');
+  }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  // Hash new password
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+  user.password = hashedPassword;
+  await user.save();
+
+  // Delete OTP record after successful reset
+  await Otp.deleteOne({ _id: otpRecord._id });
+
+  res.status(200).json({ message: 'Password reset successfully' });
+});

@@ -1,5 +1,5 @@
 import express from 'express';
-import { registerStudent, loginUser, getProfile, updateProfile, registerTeacher, getTeachers, deleteTeacher, sendOtp, getStudents, toggleBlockUser } from '../controllers/authController.js';
+import { registerStudent, loginUser, getProfile, updateProfile, registerTeacher, getTeachers, deleteTeacher, sendOtp, getStudents, toggleBlockUser, forgotPassword, resetPassword } from '../controllers/authController.js';
 import { protect, admin, teacherOrAdmin } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
@@ -7,6 +7,8 @@ const router = express.Router();
 router.post('/register', registerStudent);
 router.post('/login', loginUser);
 router.post('/send-otp', sendOtp);
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password', resetPassword);
 router.get('/profile', protect, getProfile);
 router.put('/profile', protect, updateProfile);
 
