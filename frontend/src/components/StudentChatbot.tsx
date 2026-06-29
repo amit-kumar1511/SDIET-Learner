@@ -4,6 +4,7 @@ import { Sparkles, MessageSquare, X, Send, BookOpen, Download, Eye, FileText, Ch
 import { downloadFile } from '../lib/cloudinary';
 import PDFViewerModal from './PDFViewerModal';
 import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 interface SubjectType {
   _id: string;
@@ -469,7 +470,7 @@ const StudentChatbot = () => {
           
           {/* Header */}
           <div className="bg-gradient-to-r from-indigo-600 to-violet-600 p-4 pb-5 text-white flex items-center justify-between shadow-md shrink-0">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3 text-left">
               <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
                 <Sparkles className="w-5 h-5 text-amber-300" />
               </div>
@@ -654,6 +655,8 @@ const StudentChatbot = () => {
               <Send className="w-4 h-4 text-white" />
             </button>
           </form>
+
+
 
         </div>
       )}
