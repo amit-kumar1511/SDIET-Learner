@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'motion/react';
+import { InstallPWAFooterButton } from '../components/InstallPWAFooterButton';
 
 const FAQItem: React.FC<{ question: string; answer: string }> = ({ question, answer }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -464,10 +465,13 @@ const LandingPage = () => {
             <p>
               © 2026 SDIET Learner Portal. All rights reserved.
             </p>
-            <div className="flex items-center space-x-2">
-              <span>Made with</span>
-              <div className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-ping" />
-              <span>for SDIETians</span>
+            <div className="flex items-center space-x-4">
+              <InstallPWAFooterButton />
+              <div className="flex items-center space-x-2">
+                <span>Made with</span>
+                <div className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-ping" />
+                <span>for SDIETians</span>
+              </div>
             </div>
           </div>
         </div>
