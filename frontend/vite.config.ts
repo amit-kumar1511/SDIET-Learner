@@ -18,7 +18,8 @@ export default defineConfig(({ mode }) => {
         registerType: 'autoUpdate',
         manifestFilename: 'manifest.json',
         devOptions: {
-          enabled: true
+          enabled: true,
+          suppressWarnings: true
         },
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
         manifest: {
