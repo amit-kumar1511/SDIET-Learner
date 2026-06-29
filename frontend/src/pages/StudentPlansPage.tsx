@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
-  Plus, X, Trash2, Edit2, Download, Share2, Copy, FileText, 
-  CheckCircle2, Clock, PlayCircle, Eye, Bold, Italic, Underline, 
-  List, ListOrdered, Sparkles, ChevronRight, AlertCircle, FileDown
+  Plus, X, Trash2, Edit2, Share2, Copy, FileText, Sparkles, FileDown
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -143,70 +142,15 @@ const filterTabs = [
 ];
 
 export default function StudentPlansPage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [plans, setPlans] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
   
   // Modals state
-  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [editingPlan, setEditingPlan] = useState<any>(null);
   const [viewingPlan, setViewingPlan] = useState<any>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Rich Text Editor State
-  const editorRef = useRef<HTMLDivElement>(null);
-
-  // Form State
-  const [form, setForm] = useState({
-    title: '',
-    category: 'today',
-    startDate: getLocalDateString(),
-    targetDate: getLocalDateString(),
-    content: '',
-    plainTextContent: '',
-    status: 'pending'
-  });
-
-  const handleCategoryChange = (category: string) => {
-    const today = new Date();
-    let target = new Date();
-
-    if (category === 'today') {
-      // Keep today
-    } else if (category === 'seven_days') {
-      target.setDate(today.getDate() + 7);
-    } else if (category === 'one_month') {
-      target.setMonth(today.getMonth() + 1);
-    } else if (category === 'six_months') {
-      target.setMonth(today.getMonth() + 6);
-    } else if (category === 'one_year') {
-      target.setFullYear(today.getFullYear() + 1);
-    }
-
-    setForm(prev => {
-      const todayStr = getLocalDateString(today);
-      const targetStr = category === 'custom' ? prev.targetDate : getLocalDateString(target);
-      return {
-        ...prev,
-        category,
-        startDate: todayStr,
-        targetDate: targetStr
-      };
-    });
-  };
-
-  useEffect(() => {
-    fetchPlans();
-  }, []);
-
-  // Initialize contentEditable editor innerHTML when modal opens
-  useEffect(() => {
-    if (isFormModalOpen && editorRef.current) {
-      editorRef.current.innerHTML = editingPlan ? editingPlan.content : '';
-    }
-  }, [isFormModalOpen, editingPlan]);
 
   const fetchPlans = async () => {
     setIsLoading(true);
@@ -221,98 +165,16 @@ export default function StudentPlansPage() {
   };
 
   const handleOpenCreateModal = () => {
-    const todayStr = getLocalDateString();
-    setEditingPlan(null);
-    setForm({
-      title: '',
-      category: 'today',
-      startDate: todayStr,
-      targetDate: todayStr,
-      content: '',
-      plainTextContent: '',
-      status: 'pending'
-    });
-    setIsFormModalOpen(true);
+    navigate('/student-plans/create-plan');
   };
 
   const handleOpenEditModal = (plan: any) => {
-    setEditingPlan(plan);
-    setForm({
-      title: plan.title,
-      category: plan.category,
-      startDate: getLocalDateString(new Date(plan.startDate)),
-      targetDate: getLocalDateString(new Date(plan.targetDate)),
-      content: plan.content,
-      plainTextContent: plan.plainTextContent,
-      status: plan.status
-    });
-    setIsFormModalOpen(true);
+    navigate(`/student-plans/create-plan?edit=${plan._id}`);
   };
 
-  // Editor styling helpers using execCommand
-  const execEditorCommand = (command: string, value: string = '') => {
-    document.execCommand(command, false, value);
-    if (editorRef.current) {
-      setForm(prev => ({
-        ...prev,
-        content: editorRef.current?.innerHTML || '',
-        plainTextContent: editorRef.current?.innerText || ''
-      }));
-    }
-  };
-
-  const handleEditorInput = () => {
-    if (editorRef.current) {
-      setForm(prev => ({
-        ...prev,
-        content: editorRef.current?.innerHTML || '',
-        plainTextContent: editorRef.current?.innerText || ''
-      }));
-    }
-  };
-
-  const handleResetEditor = () => {
-    if (editorRef.current) {
-      const originalContent = editingPlan ? editingPlan.content : '';
-      const originalPlainText = editingPlan ? editingPlan.plainTextContent : '';
-      editorRef.current.innerHTML = originalContent;
-      setForm(prev => ({
-        ...prev,
-        content: originalContent,
-        plainTextContent: originalPlainText
-      }));
-      toast.success('Editor reset to original content');
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.title.trim()) {
-      toast.error('Please enter a plan title');
-      return;
-    }
-    if (!form.content.trim()) {
-      toast.error('Please enter plan description notes');
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      if (editingPlan) {
-        await axios.put(`/api/student/plans/${editingPlan._id}`, form);
-        toast.success('Plan updated successfully!');
-      } else {
-        await axios.post('/api/student/plans', form);
-        toast.success('New plan added!');
-      }
-      setIsFormModalOpen(false);
-      fetchPlans();
-    } catch (error) {
-      toast.error('Failed to save plan');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  useEffect(() => {
+    fetchPlans();
+  }, []);
 
   const handleDelete = (id: string) => {
     showConfirm({
@@ -591,258 +453,6 @@ export default function StudentPlansPage() {
           </button>
         </div>
       )}
-
-      {/* Form Modal (Create & Edit) */}
-      <AnimatePresence>
-        {isFormModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }} 
-              onClick={() => setIsFormModalOpen(false)} 
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm" 
-            />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }} 
-              animate={{ opacity: 1, scale: 1 }} 
-              exit={{ opacity: 0, scale: 0.95 }} 
-              className="relative w-full max-w-2xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 sm:p-8 max-h-[90vh] overflow-y-auto"
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-black text-gray-900 dark:text-white">
-                  {editingPlan ? 'Edit Study Plan' : 'Create Study Plan'}
-                </h2>
-                <button onClick={() => setIsFormModalOpen(false)}>
-                  <X className="w-6 h-6 text-gray-400 hover:text-gray-600" />
-                </button>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-5">
-                
-                {/* Title */}
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Plan Title</label>
-                  <input
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm font-bold focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white"
-                    placeholder="e.g. Mathematics Mid-Term Revision"
-                    value={form.title}
-                    onChange={(e) => setForm({...form, title: e.target.value})}
-                  />
-                </div>
-
-                {/* Category & Status */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Plan Category</label>
-                    <select
-                      className="w-full px-4 py-3 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm font-bold focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white"
-                      value={form.category}
-                      onChange={(e) => handleCategoryChange(e.target.value)}
-                    >
-                      <option value="today">Today Plan</option>
-                      <option value="seven_days">7 Days Plan</option>
-                      <option value="one_month">1 Month Plan</option>
-                      <option value="six_months">6 Months Plan</option>
-                      <option value="one_year">1 Year Plan</option>
-                      <option value="custom">Custom Plan</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Status</label>
-                    <select
-                      className="w-full px-4 py-3 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm font-bold focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white"
-                      value={form.status}
-                      onChange={(e) => setForm({...form, status: e.target.value})}
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="in_progress">In Progress</option>
-                      <option value="completed">Completed</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Timelines */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Start Date</label>
-                    <input
-                      type="date"
-                      required
-                      disabled={form.category !== 'custom'}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm font-bold focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
-                      value={form.startDate}
-                      onChange={(e) => setForm({...form, startDate: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Target Date / Deadline</label>
-                    <input
-                      type="date"
-                      required
-                      disabled={form.category !== 'custom'}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm font-bold focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
-                      value={form.targetDate}
-                      onChange={(e) => setForm({...form, targetDate: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                {/* Duration Preview Panel */}
-                <div className="bg-indigo-50/50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-300 p-3.5 rounded-xl text-xs font-bold flex items-center justify-between border border-indigo-100/30">
-                  <span>Time Remaining:</span>
-                  <span className="uppercase tracking-wider font-extrabold text-[11px]">{getRemainingTimeText(form.targetDate, form.status)}</span>
-                </div>
-
-                {/* Rich Text Editor Tool */}
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
-                    Plan Description / Notes (Rich Text)
-                  </label>
-                  
-                  {/* Editor Toolbar */}
-                  <div className="flex flex-wrap items-center gap-1.5 p-2 bg-gray-50 dark:bg-gray-900 border border-b-0 border-gray-100 dark:border-gray-700 rounded-t-xl select-none">
-                    <button
-                      type="button"
-                      onClick={() => execEditorCommand('bold')}
-                      className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-800 rounded text-gray-700 dark:text-gray-300"
-                      title="Bold"
-                    >
-                      <Bold className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => execEditorCommand('italic')}
-                      className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-800 rounded text-gray-700 dark:text-gray-300"
-                      title="Italic"
-                    >
-                      <Italic className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => execEditorCommand('underline')}
-                      className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-800 rounded text-gray-700 dark:text-gray-300"
-                      title="Underline"
-                    >
-                      <Underline className="w-4 h-4" />
-                    </button>
-                    
-                    <span className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
-
-                    {/* Font Size */}
-                    <button
-                      type="button"
-                      onClick={() => execEditorCommand('fontSize', '4')}
-                      className="px-2 py-1 text-xs hover:bg-gray-200 dark:hover:bg-gray-800 rounded font-black text-gray-700 dark:text-gray-300"
-                      title="Increase Font Size"
-                    >
-                      A+
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => execEditorCommand('fontSize', '2')}
-                      className="px-2 py-1 text-xs hover:bg-gray-200 dark:hover:bg-gray-800 rounded font-black text-gray-700 dark:text-gray-300"
-                      title="Decrease Font Size"
-                    >
-                      A-
-                    </button>
-
-                    <span className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
-
-                    {/* Lists */}
-                    <button
-                      type="button"
-                      onClick={() => execEditorCommand('insertUnorderedList')}
-                      className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-800 rounded text-gray-700 dark:text-gray-300"
-                      title="Bullet List"
-                    >
-                      <List className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => execEditorCommand('insertOrderedList')}
-                      className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-800 rounded text-gray-700 dark:text-gray-300"
-                      title="Ordered List"
-                    >
-                      <ListOrdered className="w-4 h-4" />
-                    </button>
-
-                    <span className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
-
-                    {/* Colors */}
-                    <button
-                      type="button"
-                      onClick={() => execEditorCommand('foreColor', 'black')}
-                      className="w-5 h-5 rounded bg-black border border-gray-300"
-                      title="Black"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => execEditorCommand('foreColor', 'red')}
-                      className="w-5 h-5 rounded bg-red-600"
-                      title="Red"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => execEditorCommand('foreColor', 'green')}
-                      className="w-5 h-5 rounded bg-emerald-600"
-                      title="Green"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => execEditorCommand('foreColor', 'yellow')}
-                      className="w-5 h-5 rounded bg-amber-400"
-                      title="Yellow"
-                    />
-
-                    <span className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
-
-                    <button
-                      type="button"
-                      onClick={handleResetEditor}
-                      className="px-2 py-1 text-xs hover:bg-gray-200 dark:hover:bg-gray-800 rounded font-black text-indigo-600 dark:text-indigo-400"
-                      title="Reset Content"
-                    >
-                      Reset
-                    </button>
-                  </div>
-
-                  {/* contentEditable Area */}
-                  <div
-                    key={editingPlan ? editingPlan._id : 'new-plan'}
-                    ref={editorRef}
-                    contentEditable
-                    suppressContentEditableWarning
-                    data-placeholder="Start writing your plan notes here..."
-                    className="w-full min-h-[180px] p-4 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-b-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-medium overflow-y-auto text-gray-900 dark:text-white relative before:content-[attr(data-placeholder)] before:text-gray-400 dark:before:text-gray-500 before:absolute before:top-4 before:left-4 before:pointer-events-none empty:before:block before:hidden"
-                    onInput={handleEditorInput}
-                  />
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setIsFormModalOpen(false)}
-                    className="flex-1 px-6 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 font-bold active:scale-95 transition-all text-xs"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="flex-[2] bg-indigo-600 text-white font-black py-3.5 rounded-2xl shadow-xl shadow-indigo-100 dark:shadow-none transition-all active:scale-95 disabled:opacity-50 text-xs"
-                  >
-                    {isSubmitting ? 'Saving...' : editingPlan ? 'Update Plan' : 'Save Plan'}
-                  </button>
-                </div>
-
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
       {/* View Modal (Read-Only) */}
       <AnimatePresence>

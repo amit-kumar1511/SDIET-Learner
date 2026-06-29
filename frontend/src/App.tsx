@@ -28,6 +28,7 @@ import AchievementsPage from './pages/AchievementsPage';
 import CareerGuidancePage from './pages/CareerGuidancePage';
 import AITeacherPage from './pages/AITeacherPage';
 import StudentPlansPage from './pages/StudentPlansPage';
+import CreatePlanPage from './pages/CreatePlanPage';
 import StudentsPage from './pages/StudentsPage';
 
 export default function App() {
@@ -72,6 +73,7 @@ export default function App() {
               {/* Student Only Routes */}
               <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}>
                 <Route path="student-plans" element={<StudentPlansPage />} />
+                <Route path="student-plans/create-plan" element={<CreatePlanPage />} />
               </Route>
 
               {/* Admin Only Routes */}
