@@ -257,7 +257,8 @@ export const getStudents = asyncHandler(async (req: any, res: Response) => {
       if (req.user.authorizedBranches?.includes(branch)) {
         query.branch = branch;
       } else {
-        return res.status(200).json([]);
+        res.status(200).json([]);
+        return;
       }
     } else {
       query.branch = branch;
@@ -271,7 +272,8 @@ export const getStudents = asyncHandler(async (req: any, res: Response) => {
       if (req.user.authorizedSemesters?.includes(semNum)) {
         query.semester = semNum;
       } else {
-        return res.status(200).json([]);
+        res.status(200).json([]);
+        return;
       }
     } else {
       query.semester = semNum;
