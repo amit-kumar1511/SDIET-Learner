@@ -7,8 +7,16 @@ import toast from 'react-hot-toast';
 import { showConfirm } from '../lib/confirm';
 import { Skeleton } from '../components/ui/Skeleton';
 
-const BRANCHES = ['BTECH', 'BBA', 'BCA', 'MBA', 'MCA', 'BCOM', 'MTECH', 'DIPLOMA'];
-const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
+const BRANCHES = ['Btech CSE', 'Btech CE', 'BCA GEN', 'BCA DS', 'BBA GEN', 'BBA FISB', 'BBA DM'];
+const COURSE_SEMESTERS: Record<string, number> = {
+  'Btech CSE': 8,
+  'Btech CE': 8,
+  'BCA GEN': 6,
+  'BCA DS': 6,
+  'BBA GEN': 6,
+  'BBA FISB': 6,
+  'BBA DM': 6,
+};
 
 const NotesPage = () => {
   const { user } = useAuth();
@@ -16,10 +24,10 @@ const NotesPage = () => {
   const [loading, setLoading] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState(
-    user?.role === 'STUDENT' ? user.branch : 'BTECH'
+    user?.role === 'STUDENT' ? (user.branch || 'Btech CSE') : 'Btech CSE'
   );
   const [selectedSemester, setSelectedSemester] = useState(
-    user?.role === 'STUDENT' ? user.semester : 1
+    user?.role === 'STUDENT' ? (user.semester || 1) : 1
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newSubject, setNewSubject] = useState({ name: '', description: '', logoUrl: '' });
@@ -30,7 +38,7 @@ const NotesPage = () => {
 
   useEffect(() => {
     if (user?.role === 'STUDENT') {
-      setSelectedBranch(user.branch || 'BTECH');
+      setSelectedBranch(user.branch || 'Btech CSE');
       setSelectedSemester(user.semester || 1);
     }
   }, [user]);
@@ -123,7 +131,13 @@ const NotesPage = () => {
             {BRANCHES.map(branch => (
               <button
                 key={branch}
-                onClick={() => setSelectedBranch(branch)}
+                onClick={() => {
+                  setSelectedBranch(branch);
+                  const maxSem = COURSE_SEMESTERS[branch] || 8;
+                  if (selectedSemester > maxSem) {
+                    setSelectedSemester(maxSem);
+                  }
+                }}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   selectedBranch === branch
                     ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300'
@@ -135,7 +149,7 @@ const NotesPage = () => {
             ))}
           </div>
           <div className="flex flex-wrap gap-2">
-            {SEMESTERS.map(sem => (
+            {Array.from({ length: COURSE_SEMESTERS[selectedBranch] || 8 }, (_, i) => i + 1).map(sem => (
               <button
                 key={sem}
                 onClick={() => setSelectedSemester(sem)}
@@ -281,7 +295,7 @@ const NotesPage = () => {
 
       {/* Delete Subject Modal */}
       {isDeleteModalOpen && subjectToDelete && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-[2rem] p-8 w-full max-w-md shadow-2xl border border-gray-150 dark:border-gray-700 animate-in zoom-in duration-200">
             <h2 className="text-2xl font-black mb-3 text-red-600 dark:text-red-400 tracking-tight">Delete Subject</h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">

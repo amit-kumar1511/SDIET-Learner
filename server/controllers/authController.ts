@@ -243,41 +243,14 @@ export const getStudents = asyncHandler(async (req: any, res: Response) => {
 
   let query: any = { role: 'STUDENT' };
 
-  if (req.user.role === 'TEACHER') {
-    const authBranches = req.user.authorizedBranches || [];
-    const authSemesters = req.user.authorizedSemesters || [];
-
-    query.branch = { $in: authBranches };
-    query.semester = { $in: authSemesters };
-  }
-
   // Branch filter
   if (branch && branch !== 'ALL') {
-    if (req.user.role === 'TEACHER') {
-      if (req.user.authorizedBranches?.includes(branch)) {
-        query.branch = branch;
-      } else {
-        res.status(200).json([]);
-        return;
-      }
-    } else {
-      query.branch = branch;
-    }
+    query.branch = branch;
   }
 
   // Semester filter
   if (semester && semester !== 'ALL') {
-    const semNum = parseInt(semester);
-    if (req.user.role === 'TEACHER') {
-      if (req.user.authorizedSemesters?.includes(semNum)) {
-        query.semester = semNum;
-      } else {
-        res.status(200).json([]);
-        return;
-      }
-    } else {
-      query.semester = semNum;
-    }
+    query.semester = parseInt(semester);
   }
 
   // Text search
@@ -312,13 +285,6 @@ export const toggleBlockUser = asyncHandler(async (req: any, res: Response) => {
     if (user.role !== 'STUDENT') {
       res.status(403);
       throw new Error('Teachers can only block/unblock students');
-    }
-    const authBranches = req.user.authorizedBranches || [];
-    const authSemesters = req.user.authorizedSemesters || [];
-
-    if (!authBranches.includes(user.branch) || !authSemesters.includes(user.semester)) {
-      res.status(403);
-      throw new Error('Not authorized to block/unblock this student (out of teaching scope)');
     }
   }
 

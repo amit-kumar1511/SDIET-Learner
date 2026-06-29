@@ -5,8 +5,16 @@ import toast from 'react-hot-toast';
 import { showConfirm } from '../lib/confirm';
 import { Skeleton } from '../components/ui/Skeleton';
 
-const BRANCHES = ['BTECH', 'BBA', 'BCA', 'MBA', 'MCA', 'BCOM', 'MTECH', 'DIPLOMA'];
-const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
+const BRANCHES = ['Btech CSE', 'Btech CE', 'BCA GEN', 'BCA DS', 'BBA GEN', 'BBA FISB', 'BBA DM'];
+const COURSE_SEMESTERS: Record<string, number> = {
+  'Btech CSE': 8,
+  'Btech CE': 8,
+  'BCA GEN': 6,
+  'BCA DS': 6,
+  'BBA GEN': 6,
+  'BBA FISB': 6,
+  'BBA DM': 6,
+};
 
 const AdminPage = () => {
   const [teachers, setTeachers] = useState<any[]>([]);
@@ -24,7 +32,7 @@ const AdminPage = () => {
   const [assignments, setAssignments] = useState<any[]>([]);
   const [assignmentForm, setAssignmentForm] = useState({
     teacherId: '',
-    branch: 'BTECH',
+    branch: 'Btech CSE',
     semester: 1,
     selectedSubjectIds: [] as string[]
   });
@@ -332,7 +340,17 @@ const AdminPage = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Branch</label>
                   <select
                     value={assignmentForm.branch}
-                    onChange={(e) => setAssignmentForm({ ...assignmentForm, branch: e.target.value, selectedSubjectIds: [] })}
+                    onChange={(e) => {
+                      const newBranch = e.target.value;
+                      const maxSem = COURSE_SEMESTERS[newBranch] || 8;
+                      const currentSem = assignmentForm.semester;
+                      setAssignmentForm({ 
+                        ...assignmentForm, 
+                        branch: newBranch, 
+                        semester: currentSem > maxSem ? maxSem : currentSem,
+                        selectedSubjectIds: [] 
+                      });
+                    }}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     {BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
@@ -345,7 +363,9 @@ const AdminPage = () => {
                     onChange={(e) => setAssignmentForm({ ...assignmentForm, semester: Number(e.target.value), selectedSubjectIds: [] })}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
-                    {SEMESTERS.map(s => <option key={s} value={s}>Sem {s}</option>)}
+                    {Array.from({ length: COURSE_SEMESTERS[assignmentForm.branch] || 8 }, (_, i) => i + 1).map(s => (
+                      <option key={s} value={s}>Sem {s}</option>
+                    ))}
                   </select>
                 </div>
               </div>

@@ -6,16 +6,15 @@ import toast from 'react-hot-toast';
 import { cn } from '../lib/utils';
 import { Send, Eye, EyeOff } from 'lucide-react';
 
-const BRANCHES = ['BTECH', 'BBA', 'BCA', 'MBA', 'MCA', 'BCOM', 'MTECH', 'DIPLOMA'];
+const BRANCHES = ['Btech CSE', 'Btech CE', 'BCA GEN', 'BCA DS', 'BBA GEN', 'BBA FISB', 'BBA DM'];
 const COURSE_SEMESTERS: Record<string, number> = {
-  BTECH: 8,
-  BBA: 6,
-  BCA: 6,
-  MBA: 4,
-  MCA: 6,
-  BCOM: 6,
-  MTECH: 4,
-  DIPLOMA: 6,
+  'Btech CSE': 8,
+  'Btech CE': 8,
+  'BCA GEN': 6,
+  'BCA DS': 6,
+  'BBA GEN': 6,
+  'BBA FISB': 6,
+  'BBA DM': 6,
 };
 
 const Register = () => {
@@ -23,7 +22,7 @@ const Register = () => {
     name: '',
     email: '',
     password: '',
-    branch: 'BTECH',
+    branch: 'Btech CSE',
     semester: 1,
     rollNumber: '',
     otp: '',
@@ -192,7 +191,16 @@ const Register = () => {
                   <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">Branch</label>
                   <select
                     value={formData.branch}
-                    onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
+                    onChange={(e) => {
+                      const newBranch = e.target.value;
+                      const maxSem = COURSE_SEMESTERS[newBranch] || 8;
+                      const currentSem = formData.semester;
+                      setFormData({ 
+                        ...formData, 
+                        branch: newBranch,
+                        semester: currentSem > maxSem ? maxSem : currentSem
+                      });
+                    }}
                     className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all appearance-none"
                   >
                     {BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
@@ -205,7 +213,9 @@ const Register = () => {
                     onChange={(e) => setFormData({ ...formData, semester: Number(e.target.value) })}
                     className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all appearance-none"
                   >
-                    {[1,2,3,4,5,6,7,8].map(s => <option key={s} value={s}>Sem {s}</option>)}
+                    {Array.from({ length: COURSE_SEMESTERS[formData.branch] || 8 }, (_, i) => i + 1).map(s => (
+                      <option key={s} value={s}>Sem {s}</option>
+                    ))}
                   </select>
                 </div>
               </div>

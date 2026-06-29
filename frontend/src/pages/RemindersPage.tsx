@@ -7,8 +7,16 @@ import toast from 'react-hot-toast';
 import { showConfirm } from '../lib/confirm';
 import { Skeleton } from '../components/ui/Skeleton';
 
-const BRANCHES = ['ALL', 'BTECH', 'BBA', 'BCA', 'MBA', 'MCA', 'BCOM', 'MTECH', 'DIPLOMA'];
-const SEMESTERS = ['ALL', '1', '2', '3', '4', '5', '6', '7', '8'];
+const BRANCHES = ['ALL', 'Btech CSE', 'Btech CE', 'BCA GEN', 'BCA DS', 'BBA GEN', 'BBA FISB', 'BBA DM'];
+const COURSE_SEMESTERS: Record<string, number> = {
+  'Btech CSE': 8,
+  'Btech CE': 8,
+  'BCA GEN': 6,
+  'BCA DS': 6,
+  'BBA GEN': 6,
+  'BBA FISB': 6,
+  'BBA DM': 6,
+};
 const EXPIRY_OPTIONS = [24, 48, 72];
 
 const RemindersPage = () => {
@@ -260,7 +268,20 @@ const RemindersPage = () => {
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Branch</label>
                   <select
                     value={formData.branch}
-                    onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
+                    onChange={(e) => {
+                      const newBranch = e.target.value;
+                      const maxSem = newBranch === 'ALL' ? 8 : (COURSE_SEMESTERS[newBranch] || 8);
+                      const currentSem = formData.semester;
+                      let adjustedSem = currentSem;
+                      if (currentSem !== 'ALL' && Number(currentSem) > maxSem) {
+                        adjustedSem = 'ALL';
+                      }
+                      setFormData({ 
+                        ...formData, 
+                        branch: newBranch,
+                        semester: adjustedSem
+                      });
+                    }}
                     className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none text-gray-900 dark:text-white"
                   >
                     {BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
@@ -273,7 +294,12 @@ const RemindersPage = () => {
                     onChange={(e) => setFormData({ ...formData, semester: e.target.value })}
                     className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none text-gray-900 dark:text-white"
                   >
-                    {SEMESTERS.map(s => <option key={s} value={s}>{s}</option>)}
+                    {(formData.branch === 'ALL' 
+                      ? ['ALL', '1', '2', '3', '4', '5', '6', '7', '8'] 
+                      : ['ALL', ...Array.from({ length: COURSE_SEMESTERS[formData.branch] || 8 }, (_, i) => String(i + 1))]
+                    ).map(s => (
+                      <option key={s} value={s}>{s === 'ALL' ? 'ALL' : `Sem ${s}`}</option>
+                    ))}
                   </select>
                 </div>
               </div>

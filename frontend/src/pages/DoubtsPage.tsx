@@ -5,8 +5,16 @@ import { MessageCircle, Send, User as UserIcon, CheckCheck, Filter } from 'lucid
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 
-const BRANCHES = ['BTECH', 'BBA', 'BCA', 'MBA', 'MCA', 'BCOM', 'MTECH', 'DIPLOMA'];
-const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
+const BRANCHES = ['Btech CSE', 'Btech CE', 'BCA GEN', 'BCA DS', 'BBA GEN', 'BBA FISB', 'BBA DM'];
+const COURSE_SEMESTERS: Record<string, number> = {
+  'Btech CSE': 8,
+  'Btech CE': 8,
+  'BCA GEN': 6,
+  'BCA DS': 6,
+  'BBA GEN': 6,
+  'BBA FISB': 6,
+  'BBA DM': 6,
+};
 
 const DoubtsPage = () => {
   const { user } = useAuth();
@@ -14,7 +22,7 @@ const DoubtsPage = () => {
   const [selectedBranch, setSelectedBranch] = useState(
     user?.role === 'TEACHER' && user?.authorizedBranches?.length 
       ? user.authorizedBranches[0] 
-      : user?.branch || 'BTECH'
+      : user?.branch || 'Btech CSE'
   );
   const [selectedSemester, setSelectedSemester] = useState(
     user?.role === 'TEACHER' && user?.authorizedSemesters?.length 
@@ -140,10 +148,16 @@ const DoubtsPage = () => {
                 Select Branch
               </label>
               <div className="flex flex-wrap gap-2">
-                {BRANCHES.map(branch => (
+                 {BRANCHES.map(branch => (
                   <button
                     key={branch}
-                    onClick={() => setSelectedBranch(branch)}
+                    onClick={() => {
+                      setSelectedBranch(branch);
+                      const maxSem = COURSE_SEMESTERS[branch] || 8;
+                      if (selectedSemester > maxSem) {
+                        setSelectedSemester(maxSem);
+                      }
+                    }}
                     className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
                       selectedBranch === branch
                         ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none'
@@ -162,7 +176,7 @@ const DoubtsPage = () => {
                 Select Semester
               </label>
               <div className="flex flex-wrap gap-2">
-                {SEMESTERS.map(sem => (
+                {Array.from({ length: COURSE_SEMESTERS[selectedBranch] || 8 }, (_, i) => i + 1).map(sem => (
                   <button
                     key={sem}
                     onClick={() => setSelectedSemester(sem)}

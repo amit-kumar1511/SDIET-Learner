@@ -6,6 +6,17 @@ import { useAuth } from '../context/AuthContext';
 import { cn } from '../lib/utils';
 import { Skeleton } from '../components/ui/Skeleton';
 
+const BRANCHES = ['Btech CSE', 'Btech CE', 'BCA GEN', 'BCA DS', 'BBA GEN', 'BBA FISB', 'BBA DM'];
+const COURSE_SEMESTERS: Record<string, number> = {
+  'Btech CSE': 8,
+  'Btech CE': 8,
+  'BCA GEN': 6,
+  'BCA DS': 6,
+  'BBA GEN': 6,
+  'BBA FISB': 6,
+  'BBA DM': 6,
+};
+
 const StudentsPage = () => {
   const { user } = useAuth();
   const [profile, setProfile] = useState<any>(null);
@@ -115,14 +126,18 @@ const StudentsPage = () => {
             {/* Branch Filter */}
             <select
               value={branchFilter}
-              onChange={(e) => setBranchFilter(e.target.value)}
+              onChange={(e) => {
+                const newBranch = e.target.value;
+                setBranchFilter(newBranch);
+                const maxSem = newBranch === 'ALL' ? 8 : (COURSE_SEMESTERS[newBranch] || 8);
+                if (semesterFilter !== 'ALL' && Number(semesterFilter) > maxSem) {
+                  setSemesterFilter('ALL');
+                }
+              }}
               className="px-3 py-2.5 text-xs bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white font-bold"
             >
               <option value="ALL">All Branches</option>
-              {(profile.role === 'SUPER_ADMIN' 
-                ? ['BTECH', 'BBA', 'BCA', 'MBA', 'MCA', 'BCOM', 'MTECH', 'DIPLOMA'] 
-                : (profile.authorizedBranches || [])
-              ).map(b => <option key={b} value={b}>{b}</option>)}
+              {BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
             </select>
 
             {/* Semester Filter */}
@@ -132,10 +147,10 @@ const StudentsPage = () => {
               className="px-3 py-2.5 text-xs bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white font-bold"
             >
               <option value="ALL">All Semesters</option>
-              {(profile.role === 'SUPER_ADMIN' 
-                ? [1, 2, 3, 4, 5, 6, 7, 8] 
-                : (profile.authorizedSemesters || [])
-              ).map(s => <option key={s} value={s}>Sem {s}</option>)}
+              {(branchFilter === 'ALL'
+                ? [1, 2, 3, 4, 5, 6, 7, 8]
+                : Array.from({ length: COURSE_SEMESTERS[branchFilter] || 8 }, (_, i) => i + 1)
+              ).map(s => <option key={s} value={String(s)}>Sem {s}</option>)}
             </select>
           </div>
         </div>

@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ['SUPER_ADMIN', 'TEACHER', 'STUDENT'], required: true },
   
   // Student specific
-  branch: { type: String, enum: ['BTECH', 'BBA', 'BCA', 'MBA', 'MCA', 'BCOM', 'MTECH', 'DIPLOMA'] },
+  branch: { type: String, enum: ['Btech CSE', 'Btech CE', 'BCA GEN', 'BCA DS', 'BBA GEN', 'BBA FISB', 'BBA DM'] },
   semester: { type: Number, min: 1, max: 8 },
   rollNumber: { type: String }, // e.g. CSE-22/016
   
