@@ -8,12 +8,10 @@ let aiInstance: GoogleGenAI | null = null;
 
 export function getAIClient(): GoogleGenAI {
   if (!aiInstance) {
-    let key = process.env.GEMINI_API_KEY?.trim();
-    const fallbackKey = 'AIzaSyD3S-ZA_zz19-sXoH_8qvjb9ApWBnORddU';
+    const key = process.env.GEMINI_API_KEY?.trim();
     
-    // Fallback if key is missing, a placeholder, or doesn't start with Gemini prefix 'AIzaSy'
     if (!key || key.includes('MY_GEMINI_API_KEY') || !key.startsWith('AIzaSy')) {
-      key = fallbackKey;
+      throw new Error('GEMINI_API_KEY is not defined or is invalid in the .env file.');
     }
     
     aiInstance = new GoogleGenAI({
@@ -74,7 +72,6 @@ export async function extractTextFromImage(fileUrl: string): Promise<string> {
       mimeType = 'image/gif';
     }
 
-    let response;
     const contents = [
       {
         inlineData: {
@@ -85,26 +82,10 @@ export async function extractTextFromImage(fileUrl: string): Promise<string> {
       'Extract all educational/academic notes, handwriting, tables, definitions, diagrams text, or standard text from this study sheet image. Transcribe it beautifully and accurately in readable markdown format. Do not add any conversational meta commentary - output only the extracted content. If the image contains zero legible words, return an empty string.',
     ];
 
-    try {
-      response = await client.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents,
-      });
-    } catch (err: any) {
-      console.warn('Gemini 2.5 Flash OCR failed, trying gemini-1.5-flash:', err.message);
-      try {
-        response = await client.models.generateContent({
-          model: 'gemini-1.5-flash',
-          contents,
-        });
-      } catch (err2: any) {
-        console.warn('Gemini 1.5 Flash OCR failed, trying gemini-2.0-flash:', err2.message);
-        response = await client.models.generateContent({
-          model: 'gemini-2.0-flash',
-          contents,
-        });
-      }
-    }
+    const response = await client.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents,
+    });
 
     const text = response.text?.trim() || '';
     console.log(`Image Gemini OCR success. Length: ${text.length}`);
@@ -179,51 +160,79 @@ Remember: If the target topic is missing or unaddressed in the context notes abo
     parts: [{ text: finalPrompt }],
   });
 
-  let response;
-  try {
-    response = await client.models.generateContent({
-      model: 'gemini-3.5-flash',
-      contents: chatContents as any,
-      config: {
-        systemInstruction,
-        temperature: 0.2,
-      },
-    });
-  } catch (err: any) {
-    console.warn('Gemini 3.5 Flash failed, trying gemini-1.5-flash:', err.message);
-    try {
-      response = await client.models.generateContent({
-        model: 'gemini-1.5-flash',
-        contents: chatContents as any,
-        config: {
-          systemInstruction,
-          temperature: 0.2,
-        },
-      });
-    } catch (err2: any) {
-      console.warn('Gemini 1.5 Flash failed, trying gemini-2.0-flash:', err2.message);
-      try {
-        response = await client.models.generateContent({
-          model: 'gemini-2.0-flash',
-          contents: chatContents as any,
-          config: {
-            systemInstruction,
-            temperature: 0.2,
-          },
-        });
-      } catch (err3: any) {
-        console.warn('Gemini 2.0 Flash failed, trying gemini-1.5-pro:', err3.message);
-        response = await client.models.generateContent({
-          model: 'gemini-1.5-pro',
-          contents: chatContents as any,
-          config: {
-            systemInstruction,
-            temperature: 0.2,
-          },
-        });
-      }
-    }
-  }
+  const response = await client.models.generateContent({
+    model: 'gemini-2.0-flash',
+    contents: chatContents as any,
+    config: {
+      systemInstruction,
+      temperature: 0.2,
+    },
+  });
 
   return response.text || '';
+}
+
+export async function generateTeacherResponseStream({
+  mode,
+  subjectName,
+  topic,
+  contextNotesText,
+  prompt,
+  history,
+}: GenerateParams): Promise<any> {
+  const client = getAIClient();
+
+  const truncatedContext = contextNotesText && contextNotesText.trim().length > 0 
+    ? contextNotesText.slice(0, 120000) 
+    : 'NO_CONTEXT_AVAILABLE';
+
+  const systemInstruction = `You are a warm, highly-supportive, and engaging AI college teacher named Dr. Aisha.
+Your task is to conduct a personalized dynamic tutoring session with the student on the subject: "${subjectName}", specifically focusing on the topic: "${topic}".
+
+STRICT RULE:
+- You must answer ONLY from the provided notes text context.
+- If the context notes text is "NO_CONTEXT_AVAILABLE", or if the context notes do not contain sufficient information to explain the requested topic/question, you MUST answer exactly: "This topic is not available in uploaded notes." and nothing else.
+- Do not make up answers, do not use external internet knowledge if the information isn't in the uploaded notes.
+
+Teaching Modes Behavior:
+1. Explain Topic: Provide a clear, structured, and pedagogical explanation of the concepts, complete with easy-to-understand examples and analogy-based teaching from the notes.
+2. Quick Summary: Summarize the key points in an elegant, quick, highly-scannable bulleted fashion.
+3. Viva Questions: Generate 5 relevant practical or oral questions based on the notes context to test the student's understanding, without printing answers immediately unless they ask.
+4. MCQ Generator: Generate 4 interactive multiple-choice questions from the notes, with a clean format including options (A, B, C, D) and hide answers at the bottom.
+5. Revision Mode: Provide a summary of the core equations, definitions, or bullet-point summaries of formulas for rapid study.
+
+Your response MUST be formatted in clean, human-readable Markdown with bolding, lists, and headers where appropriate. Do not output raw JSON. Always respond in simple, empathetic, encouraging academic language.`;
+
+  // Format previous history into Gemini contents format
+  const chatContents = history.map((msg) => ({
+    role: msg.sender === 'user' ? 'user' : 'model',
+    parts: [{ text: msg.content }],
+  }));
+
+  // Append context explanation alongside prompt
+  let finalPrompt = `[Teaching Mode: ${mode}]
+[Topic: ${topic}]
+[Subject: ${subjectName}]
+
+--- UPLOADED NOTES CONTEXT START ---
+${truncatedContext}
+--- UPLOADED NOTES CONTEXT END ---
+
+Student's Message/Question: ${prompt}
+
+Remember: If the target topic is missing or unaddressed in the context notes above, reply with exactly: "This topic is not available in uploaded notes."`;
+
+  chatContents.push({
+    role: 'user',
+    parts: [{ text: finalPrompt }],
+  });
+
+  return client.models.generateContentStream({
+    model: 'gemini-2.0-flash',
+    contents: chatContents as any,
+    config: {
+      systemInstruction,
+      temperature: 0.2,
+    },
+  });
 }

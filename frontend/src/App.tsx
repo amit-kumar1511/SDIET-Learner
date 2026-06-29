@@ -26,7 +26,6 @@ import AdminPage from './pages/AdminPage';
 import DoubtsPage from './pages/DoubtsPage';
 import AchievementsPage from './pages/AchievementsPage';
 import CareerGuidancePage from './pages/CareerGuidancePage';
-import AITeacherPage from './pages/AITeacherPage';
 import StudentPlansPage from './pages/StudentPlansPage';
 import CreatePlanPage from './pages/CreatePlanPage';
 import StudentsPage from './pages/StudentsPage';
@@ -66,8 +65,6 @@ export default function App() {
                 <Route path="career" element={<CareerGuidancePage />} />
                 <Route path="career/category/:categoryId" element={<CareerGuidancePage />} />
                 <Route path="career/category/:categoryId/guide/:guideId" element={<CareerGuidancePage />} />
-                <Route path="ai-teacher" element={<AITeacherPage />} />
-                <Route path="ai-teacher/session/:sessionId" element={<AITeacherPage />} />
               </Route>
 
               {/* Student Only Routes */}

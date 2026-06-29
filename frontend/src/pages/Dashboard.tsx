@@ -69,26 +69,6 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-8 pb-12 select-none">
-      {/* AI Teacher Banner */}
-      <div className="bg-gradient-to-r from-[#e2dcfe] to-[#f4f2ff] dark:from-[#2a175c] dark:to-[#171133] rounded-[2rem] shadow-sm relative overflow-hidden p-8 border border-[#dcd6ff] dark:border-[#382673]">
-        <div className="relative z-10 space-y-6">
-          <div className="space-y-2">
-            <h2 className="font-extrabold text-2xl sm:text-3xl text-[#2b1875] dark:text-[#c7d2fe] tracking-tight">AI Teacher Session</h2>
-            <p className="text-sm sm:text-base text-[#5b21b6] dark:text-[#a5b4fc] font-medium max-w-2xl leading-relaxed">
-              Your personal AI mentor for doubt solving, notes, MCQs, and more.
-            </p>
-          </div>
-          <div>
-            <Link 
-              to="/ai-teacher" 
-              className="inline-flex items-center space-x-2 bg-white text-[#6366f1] px-6 py-3 rounded-full font-bold text-sm shadow-md hover:bg-slate-50 transition-all active:scale-95"
-            >
-              <span>Start Session</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        </div>
-      </div>
 
       {/* 5-6 Action Cards Grid */}
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">

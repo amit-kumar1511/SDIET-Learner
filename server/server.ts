@@ -13,7 +13,6 @@ import assignmentRoutes from './routes/assignmentRoutes.js';
 import reminderRoutes from './routes/reminderRoutes.js';
 import achievementRoutes from './routes/achievementRoutes.js';
 import careerRoutes from './routes/careerRoutes.js';
-import aiRoutes from './routes/aiRoutes.js';
 import { studentPlanRouter, shareRouter } from './routes/studentPlanRoutes.js';
 import { initSocket } from './utils/socket.js';
 import { createServer } from 'http';
@@ -106,7 +105,6 @@ app.use('/api/assignments', assignmentRoutes);
 app.use('/api/reminders', reminderRoutes);
 app.use('/api/career', careerRoutes);
 app.use('/api/achievements', achievementRoutes);
-app.use('/api/ai', aiRoutes);
 app.use('/api/student/plans', studentPlanRouter);
 app.use('/api/share/plans', shareRouter);
 

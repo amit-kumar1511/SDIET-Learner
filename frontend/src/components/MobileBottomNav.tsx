@@ -5,7 +5,6 @@ import { Home, FileText, Sparkles, Bell } from 'lucide-react';
 const tabs = [
   { label: 'Home',      to: '/dashboard',  Icon: Home      },
   { label: 'Notes',     to: '/notes',      Icon: FileText  },
-  { label: 'AI',        to: '/ai-teacher', Icon: Sparkles  },
   { label: 'Reminder',  to: '/reminders',  Icon: Bell      },
 ];
 
