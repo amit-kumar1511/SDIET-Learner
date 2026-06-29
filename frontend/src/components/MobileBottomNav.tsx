@@ -1,11 +1,12 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, FileText, Sparkles, Bell } from 'lucide-react';
+import { Home, FileText, ListTodo, Bell } from 'lucide-react';
 
 const tabs = [
-  { label: 'Home',      to: '/dashboard',  Icon: Home      },
-  { label: 'Notes',     to: '/notes',      Icon: FileText  },
-  { label: 'Reminder',  to: '/reminders',  Icon: Bell      },
+  { label: 'Home',      to: '/dashboard',     Icon: Home      },
+  { label: 'Notes',     to: '/notes',         Icon: FileText  },
+  { label: 'Todo',      to: '/student-plans', Icon: ListTodo  },
+  { label: 'Reminder',  to: '/reminders',     Icon: Bell      },
 ];
 
 const MobileBottomNav = () => {

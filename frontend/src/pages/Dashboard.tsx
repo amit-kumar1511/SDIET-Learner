@@ -69,6 +69,17 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-8 pb-12 select-none">
+      {/* Welcome Header */}
+      <div className="relative p-6 sm:p-8 bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-transparent dark:from-indigo-950/20 rounded-3xl border border-indigo-100/10 dark:border-indigo-900/30 overflow-hidden text-left shadow-xs">
+        <div className="relative z-10 space-y-2">
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+            Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-purple-400">{user?.name || 'Student'}</span> 👋
+          </h1>
+          <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 font-semibold tracking-wide leading-relaxed">
+            Access your study materials, notes, PYQs, assignments, etc.
+          </p>
+        </div>
+      </div>
 
       {/* 5-6 Action Cards Grid */}
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
