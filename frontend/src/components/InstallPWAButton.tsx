@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Download } from 'lucide-react';
+import { Download, Check } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: Array<string>;
@@ -13,21 +14,35 @@ interface BeforeInstallPromptEvent extends Event {
 export const InstallPWAButton: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstallable, setIsInstallable] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
+    const checkStandalone = () => {
+      const isStandaloneMode = 
+        window.matchMedia('(display-mode: standalone)').matches || 
+        (navigator as any).standalone === true;
+      
+      if (isStandaloneMode) {
+        setIsInstalled(true);
+      }
+    };
+    checkStandalone();
+
     const handleBeforeInstallPrompt = (e: Event) => {
-      // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
-      // Stash the event so it can be triggered later.
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      // Update UI notify the user they can install the PWA
       setIsInstallable(true);
+      setIsInstalled(false);
     };
 
     const handleAppInstalled = () => {
       setIsInstallable(false);
+      setIsInstalled(true);
       setDeferredPrompt(null);
-      console.log('PWA was installed');
+      toast.success("App installed successfully. Icon may appear on home screen/app drawer in a few seconds.", {
+        duration: 6000,
+        position: 'top-center'
+      });
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -43,19 +58,24 @@ export const InstallPWAButton: React.FC = () => {
     if (!deferredPrompt) {
       return;
     }
-    // Show the install prompt
     deferredPrompt.prompt();
-    // Wait for the user to respond to the prompt
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === 'accepted') {
-      console.log('User accepted the install prompt');
-    } else {
-      console.log('User dismissed the install prompt');
+      setIsInstalled(true);
+      setIsInstallable(false);
     }
-    // We've used the prompt, and can't use it again, throw it away
     setDeferredPrompt(null);
-    setIsInstallable(false);
   };
+
+  if (isInstalled) {
+    return (
+      <div className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-250/20 text-emerald-600 dark:text-emerald-400 text-xs sm:text-sm font-bold rounded-lg select-none">
+        <Check className="w-4 h-4" />
+        <span className="hidden sm:inline">App Installed</span>
+        <span className="sm:hidden">Installed</span>
+      </div>
+    );
+  }
 
   if (!isInstallable) {
     return null;
@@ -64,7 +84,7 @@ export const InstallPWAButton: React.FC = () => {
   return (
     <button
       onClick={handleInstallClick}
-      className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors shadow-sm"
+      className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-medium rounded-lg transition-all shadow-sm cursor-pointer active:scale-95"
     >
       <Download className="w-4 h-4" />
       <span className="hidden sm:inline">Install SDIET App</span>

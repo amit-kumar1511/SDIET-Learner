@@ -10,12 +10,23 @@ axios.defaults.baseURL = API_BASE_URL;
 
 const updateSW = registerSW({
   onNeedRefresh() {
-    // Optional: Show a prompt to the user to refresh the page
+    updateSW(true);
   },
   onOfflineReady() {
-    // Optional: Show a message that the app is ready to work offline
+    console.log('App ready to work offline');
   },
 });
+
+// Auto-reload page when service worker updates and claims control
+if ('serviceWorker' in navigator) {
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!refreshing) {
+      refreshing = true;
+      window.location.reload();
+    }
+  });
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
