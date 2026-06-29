@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Download, Smartphone, Share, PlusSquare, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { createPortal } from 'react-dom';
+import toast from 'react-hot-toast';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: Array<string>;
@@ -52,6 +53,10 @@ export const InstallPWAFooterButton: React.FC = () => {
       setIsInstalled(true);
       setDeferredPrompt(null);
       localStorage.setItem('pwa_installed', 'true');
+      toast.success("App installed successfully. Icon may appear on home screen/app drawer in a few seconds.", {
+        duration: 6000,
+        position: 'top-center'
+      });
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
