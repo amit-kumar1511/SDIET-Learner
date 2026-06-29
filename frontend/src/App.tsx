@@ -73,11 +73,8 @@ export default function App() {
                 <Route path="student-plans/create-plan" element={<CreatePlanPage />} />
               </Route>
 
-<<<<<<< HEAD
-              {/* Admin Only Routessss */}
-=======
-              {/* Admin Only Routesg */}
->>>>>>> c2bbb26104fb61b2ef3aef662c152e078d30ae17
+              {/* Admin Only Routes */}
+
               <Route element={<ProtectedRoute allowedRoles={['SUPER_ADMIN', 'TEACHER']} />}>
                 <Route path="doubts" element={<DoubtsPage />} />
                 <Route path="students" element={<StudentsPage />} />
