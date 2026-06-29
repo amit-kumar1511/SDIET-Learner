@@ -49,10 +49,10 @@ export default defineConfig(({ mode }) => {
               purpose: 'any'
             },
             {
-              src: '/icons/maskable-icon.png',
+              src: '/icons/maskable-512.png',
               sizes: '512x512',
               type: 'image/png',
-              purpose: 'maskable'
+              purpose: 'any maskable'
             }
           ]
         },
