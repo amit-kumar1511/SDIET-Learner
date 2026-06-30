@@ -144,7 +144,6 @@ const LandingPage = () => {
       
       {/* Background grids and glowing radial gradients */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b08_1px,transparent_1px),linear-gradient(to_bottom,#1e293b08_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] pointer-events-none" />
-      <div className="absolute top-[-10%] left-[-20%] w-[60%] h-[50%] rounded-full bg-violet-600/10 dark:bg-violet-600/10 blur-[130px] pointer-events-none" />
       <div className="absolute top-[30%] right-[-10%] w-[50%] h-[60%] rounded-full bg-indigo-600/5 dark:bg-indigo-600/8 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[10%] left-[-20%] w-[60%] h-[50%] rounded-full bg-purple-700/5 dark:bg-purple-700/8 blur-[140px] pointer-events-none" />
 
@@ -407,8 +406,12 @@ const LandingPage = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 mb-20">
             <div className="col-span-2 space-y-6">
               <Link to="/" className="flex items-center space-x-2.5">
-                <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/10">
-                  <GraduationCap className="w-6 h-6 text-white" />
+                <div className="w-14 h-14 rounded-xl overflow-hidden flex items-center justify-center">
+                  <img
+                    src="/icons/sdiet-logo.png"
+                    alt="SDIET Logo"
+                    className="w-full h-full object-contain"
+                  />
                 </div>
                 <div className="flex flex-col leading-[0.8]">
                   <span className="text-2xl font-black tracking-tighter text-slate-900 dark:text-white">SDIET</span>

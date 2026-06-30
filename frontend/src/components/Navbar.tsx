@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
-import { LogOut, User as UserIcon, Settings, Moon, Sun, MessageCircle, Bell, Image as ImageIcon } from 'lucide-react';
+import { LogOut, User as UserIcon, Settings, Moon, Sun, MessageCircle, GraduationCap, Bell, Image as ImageIcon } from 'lucide-react';
 import { InstallPWAButton } from './InstallPWAButton';
 
 const Navbar = () => {
@@ -15,7 +15,7 @@ const Navbar = () => {
   const notificationsRef = useRef<HTMLDivElement>(null);
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    return localStorage.getItem('theme') === 'dark' || 
+    return localStorage.getItem('theme') === 'dark' ||
       (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
   });
 
@@ -50,26 +50,29 @@ const Navbar = () => {
 
   return (
     <nav className="bg-white dark:bg-gray-900 shadow-md transition-colors duration-200 relative z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <Link to="/" className="flex-shrink-0 flex items-center space-x-2">
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg overflow-hidden">
-                <img 
-                  src="/icons/sdiet-logo.png" 
-                  alt="SDIET Logo" 
-                  className="h-full w-full object-contain"
-                />
-              </div>
-              <div className="flex flex-col leading-[0.8]">
-                <span className="text-2xl font-black tracking-tighter text-indigo-600 dark:text-indigo-400">SDIET</span>
-                <span className="text-[10px] uppercase tracking-[0.4em] font-extrabold text-gray-400 dark:text-gray-500 ml-0.5">Learner</span>
+            <Link to="/" className="flex items-center gap-0 h-16">
+              <img
+                src="/icons/sdiet-logo.png"
+                alt="SDIET Logo"
+                className="h-16 w-16 object-contain"
+              />
+              <div className="flex flex-col justify-center gap-0">
+                <span className="text-2xl font-black tracking-tight leading-none text-indigo-600 dark:text-indigo-400">SDIET</span>
+                <span className="text-[10px] uppercase tracking-[0.35em] font-bold leading-none text-gray-400 dark:text-gray-500 mt-0.5">Learner</span>
               </div>
             </Link>
           </div>
 
           <div className="flex items-center space-x-2 sm:space-x-4">
-            <InstallPWAButton />
+            {!user && (
+              <div className="hidden sm:flex items-center">
+                <InstallPWAButton />
+              </div>
+            )}
+            {user && <InstallPWAButton />}
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
               className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors"
@@ -96,7 +99,7 @@ const Navbar = () => {
                     <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
                       <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Notifications</h3>
                       {unreadCount > 0 && (
-                        <button 
+                        <button
                           onClick={markAllAsRead}
                           className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
                         >
@@ -107,7 +110,7 @@ const Navbar = () => {
                     <div className="max-h-96 overflow-y-auto">
                       {notifications.length > 0 ? (
                         notifications.map((n) => (
-                          <div 
+                          <div
                             key={n._id}
                             onClick={() => {
                               markAsRead(n._id);
@@ -141,7 +144,7 @@ const Navbar = () => {
 
             {user ? (
               <div className="relative" ref={dropdownRef}>
-                <button 
+                <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 focus:outline-none"
                 >
@@ -150,15 +153,15 @@ const Navbar = () => {
                   </div>
                   <span className="hidden sm:block font-medium">{user.name}</span>
                 </button>
-                
+
                 {isDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-56 py-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 transform origin-top-right transition-all">
                     <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700 sm:hidden">
                       <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{user.name}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
                     </div>
-                    <Link 
-                      to="/profile" 
+                    <Link
+                      to="/profile"
                       onClick={() => setIsDropdownOpen(false)}
                       className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
@@ -166,15 +169,15 @@ const Navbar = () => {
                     </Link>
                     {(user.role === 'TEACHER' || user.role === 'SUPER_ADMIN') && (
                       <>
-                        <Link 
-                          to="/doubts" 
+                        <Link
+                          to="/doubts"
                           onClick={() => setIsDropdownOpen(false)}
                           className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
                           <MessageCircle className="w-4 h-4 mr-2" /> Doubts
                         </Link>
-                        <Link 
-                          to="/students" 
+                        <Link
+                          to="/students"
                           onClick={() => setIsDropdownOpen(false)}
                           className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
@@ -183,8 +186,8 @@ const Navbar = () => {
                       </>
                     )}
                     {user.role === 'SUPER_ADMIN' && (
-                      <Link 
-                        to="/admin" 
+                      <Link
+                        to="/admin"
                         onClick={() => setIsDropdownOpen(false)}
                         className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                       >
@@ -202,10 +205,10 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="flex items-center space-x-2 sm:space-x-4">
-                <Link to="/login" className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium text-sm sm:text-base">
+                <Link to="/login" className="bg-indigo-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-md hover:bg-indigo-700 transition-colors font-medium text-sm sm:text-base">
                   Login
                 </Link>
-                <Link to="/register" className="bg-indigo-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-md hover:bg-indigo-700 transition-colors font-medium text-sm sm:text-base">
+                <Link to="/register" className="hidden sm:inline-block bg-indigo-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-md hover:bg-indigo-700 transition-colors font-medium text-sm sm:text-base">
                   Register
                 </Link>
               </div>
