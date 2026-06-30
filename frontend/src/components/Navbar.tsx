@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
-import { LogOut, User as UserIcon, Settings, Moon, Sun, MessageCircle, GraduationCap, Bell, Image as ImageIcon } from 'lucide-react';
+import { LogOut, User as UserIcon, Settings, Moon, Sun, MessageCircle, Bell, Image as ImageIcon } from 'lucide-react';
 import { InstallPWAButton } from './InstallPWAButton';
 
 const Navbar = () => {
@@ -11,7 +11,6 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [imageError, setImageError] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
 
@@ -55,25 +54,12 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0 flex items-center space-x-2">
-              <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg overflow-hidden">
-                {!imageError ? (
-                  <img 
-                    src="https://www.satyug.edu.in/wp-content/uploads/2023/05/SDIET-Logo-1.png" 
-                    alt="SDIET Logo" 
-                    className="h-full w-full object-contain"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      const img = e.target as HTMLImageElement;
-                      if (img.src === 'https://www.satyug.edu.in/wp-content/uploads/2023/05/SDIET-Logo-1.png') {
-                        img.src = 'https://www.satyug.edu.in/wp-content/uploads/2019/04/logo.png';
-                      } else {
-                        setImageError(true);
-                      }
-                    }}
-                  />
-                ) : (
-                  <GraduationCap className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-                )}
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg overflow-hidden">
+                <img 
+                  src="/icons/sdiet-logo.png" 
+                  alt="SDIET Logo" 
+                  className="h-full w-full object-contain"
+                />
               </div>
               <div className="flex flex-col leading-[0.8]">
                 <span className="text-2xl font-black tracking-tighter text-indigo-600 dark:text-indigo-400">SDIET</span>
