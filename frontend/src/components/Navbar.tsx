@@ -61,7 +61,7 @@ const Navbar = () => {
               />
               <div className="flex flex-col justify-center gap-0">
                 <span className="text-2xl font-black tracking-tight leading-none text-indigo-600 dark:text-indigo-400">SDIET</span>
-                <span className="text-[10px] uppercase tracking-[0.35em] font-bold leading-none text-gray-400 dark:text-gray-500 mt-0.5">Learner</span>
+                <span className="text-[9px] uppercase tracking-[0.35em] font-bold leading-none text-gray-400 dark:text-gray-500 mt-0.5">Learner</span>
               </div>
             </Link>
           </div>
