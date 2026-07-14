@@ -5,6 +5,7 @@ import App from './App.tsx';
 import './index.css';
 import { registerSW } from 'virtual:pwa-register';
 import { API_BASE_URL } from './config/api';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 axios.defaults.baseURL = API_BASE_URL;
 
@@ -30,6 +31,8 @@ if ('serviceWorker' in navigator) {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ''}>
+      <App />
+    </GoogleOAuthProvider>
   </StrictMode>,
 );

@@ -1,23 +1,41 @@
 import express from 'express';
-import { registerStudent, loginUser, getProfile, updateProfile, registerTeacher, getTeachers, deleteTeacher, sendOtp, getStudents, toggleBlockUser, forgotPassword, resetPassword } from '../controllers/authController.js';
+import {
+  googleAuth,
+  registerStudent,
+  loginUser,
+  getProfile,
+  updateProfile,
+  registerTeacher,
+  getTeachers,
+  deleteTeacher,
+  getStudents,
+  toggleBlockUser,
+  forgotPassword,
+  resetPassword,
+} from '../controllers/authController.js';
 import { protect, admin, teacherOrAdmin } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
-router.post('/register', registerStudent);
-router.post('/login', loginUser);
-router.post('/send-otp', sendOtp);
+// ── Public auth routes ────────────────────────────────────────────────────
+router.post('/google', googleAuth);        // Google ID-token verify (login or get reg token)
+router.post('/register', registerStudent); // Complete registration with Google reg token
+router.post('/login', loginUser);          // Email + website password login
+
+// Password reset (OTP-based, kept for existing users)
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
+
+// ── Protected user routes ─────────────────────────────────────────────────
 router.get('/profile', protect, getProfile);
 router.put('/profile', protect, updateProfile);
 
-// Admin routes
+// ── Admin routes ──────────────────────────────────────────────────────────
 router.post('/teacher', protect, admin, registerTeacher);
 router.get('/teachers', protect, admin, getTeachers);
 router.delete('/teacher/:id', protect, admin, deleteTeacher);
 
-// Student directory & block routes (Admin and Teacher)
+// ── Student directory & block routes (Admin and Teacher) ──────────────────
 router.get('/students', protect, teacherOrAdmin, getStudents);
 router.post('/students/toggle-block/:id', protect, teacherOrAdmin, toggleBlockUser);
 
