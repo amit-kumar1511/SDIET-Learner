@@ -61,10 +61,6 @@ const Register = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
      e.preventDefault();
-     if (!otpSent) {
-       toast.error('Please verify your email with OTP first');
-       return;
-     }
      
      setIsRegistering(true);
      try {
@@ -115,7 +111,7 @@ const Register = () => {
                   placeholder="John Doe"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-sm"
                 />
               </div>
               <div>
@@ -128,7 +124,7 @@ const Register = () => {
                     title="Must end with @satyug.edu.in"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all pr-14"
+                    className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all pr-12 text-sm"
                     placeholder="name@satyug.edu.in"
                     disabled={otpSent}
                   />
@@ -141,29 +137,29 @@ const Register = () => {
                     <Send className={cn("w-4 h-4", isSendingOtp && "animate-pulse")} />
                   </button>
                 </div>
-                {!otpSent && (
-                  <p className="text-[10px] text-gray-400 mt-1.5 ml-1 italic font-medium italic">Click the icon to receive a 4-digit verification code.</p>
-                )}
-              </div>
-
-              {otpSent && (
-                <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                  <label className="block text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-2 ml-1">Account Verification (OTP)</label>
-                  <input
-                    type="text"
-                    required
-                    maxLength={4}
-                    placeholder="Enter 4-digit code"
-                    value={formData.otp}
-                    onChange={(e) => setFormData({ ...formData, otp: e.target.value.replace(/\D/g, '') })}
-                    className="w-full px-5 py-3.5 rounded-2xl border-2 border-indigo-100 dark:border-indigo-900/50 bg-indigo-50/30 dark:bg-indigo-900/10 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-center tracking-[1em] text-xl font-black"
-                  />
+                </div>
+                <div>
+                <label className="block text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-2 ml-1">Account Verification (OTP)</label>
+                <input
+                  type="text"
+                  required
+                  maxLength={4}
+                  placeholder={otpSent ? "_ _ _ _" : "Send OTP first, then enter here"}
+                  value={formData.otp}
+                  onChange={(e) => setFormData({ ...formData, otp: e.target.value.replace(/\D/g, '') })}
+                  className={`w-full px-4 py-2.5 rounded-2xl border-2 border-indigo-100 dark:border-indigo-900/50 bg-indigo-50/30 dark:bg-indigo-900/10 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-center text-sm font-black ${formData.otp ? 'tracking-[0.5em]' : 'tracking-normal'}`}
+                  disabled={!otpSent}
+                />
+                {otpSent && (
                   <p className="text-[10px] text-indigo-500 mt-1.5 ml-1 font-bold flex items-center gap-1">
                     <span className="w-1 h-1 rounded-full bg-indigo-500"></span>
                     Verification code sent to {formData.email}
                   </p>
-                </div>
-              )}
+                )}
+                {!otpSent && (
+                  <p className="text-[10px] text-gray-400 mt-1.5 ml-1 italic font-medium">Click the ➤ icon next to the email field to receive your 4-digit OTP code.</p>
+                )}
+              </div>
               <div>
                 <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">Password</label>
                 <div className="relative">
@@ -174,7 +170,7 @@ const Register = () => {
                     placeholder="••••••••"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all pr-12"
+                    className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all pr-10 text-sm"
                   />
                   <button
                     type="button"
@@ -201,7 +197,7 @@ const Register = () => {
                         semester: currentSem > maxSem ? maxSem : currentSem
                       });
                     }}
-                    className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all appearance-none"
+                    className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all appearance-none text-sm"
                   >
                     {BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
                   </select>
@@ -211,7 +207,7 @@ const Register = () => {
                   <select
                     value={formData.semester}
                     onChange={(e) => setFormData({ ...formData, semester: Number(e.target.value) })}
-                    className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all appearance-none"
+                    className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all appearance-none text-sm"
                   >
                     {Array.from({ length: COURSE_SEMESTERS[formData.branch] || 8 }, (_, i) => i + 1).map(s => (
                       <option key={s} value={s}>Sem {s}</option>
@@ -228,7 +224,7 @@ const Register = () => {
                   title="Format: CSE-22/016"
                   value={formData.rollNumber}
                   onChange={(e) => setFormData({ ...formData, rollNumber: e.target.value })}
-                  className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-sm"
                   placeholder="CSE-22/016"
                 />
               </div>

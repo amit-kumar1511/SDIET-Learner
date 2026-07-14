@@ -35,7 +35,12 @@ export const sendOtp = asyncHandler(async (req: Request, res: Response) => {
     </div>
   `;
 
-  await sendEmail(email, 'Your Registration OTP', html);
+  const emailSent = await sendEmail(email, 'Your Registration OTP', html);
+
+  if (!emailSent) {
+    res.status(500);
+    throw new Error('Failed to send OTP email. Please check your email address and try again.');
+  }
 
   res.status(200).json({ message: 'OTP sent successfully' });
 });
