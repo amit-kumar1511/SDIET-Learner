@@ -29,9 +29,17 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+if (!googleClientId) {
+  console.error(
+    '[Auth] VITE_GOOGLE_CLIENT_ID is not set. Google authentication will not work. ' +
+    'Add VITE_GOOGLE_CLIENT_ID to your .env file and redeploy.'
+  );
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ''}>
+    <GoogleOAuthProvider clientId={googleClientId || ''}>
       <App />
     </GoogleOAuthProvider>
   </StrictMode>,
